@@ -1,0 +1,61 @@
+﻿<Window x:Class="CompPair.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CompPair"
+        mc:Ignorable="d"
+        Title="DMS Pair Analyzer"
+        Height="930" Width="900">
+
+    <Window.Resources>
+        <local:BoolToVisibilityConverter x:Key="bool2vis"/>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0"
+               Content="Click to select a DMS measurement file"
+               HorizontalContentAlignment="Center"
+               VerticalContentAlignment="Center"
+               MouseDown="Dms1Prompt_MouseDown"/>
+        <Canvas x:Name="cnvDms1" Grid.Row="0"
+                Visibility="{Binding IsDms1Ready, Converter={StaticResource bool2vis}}"
+                MouseDown="Dms1Prompt_MouseDown"/>
+        <Label x:Name="lblDms1" Grid.Row="0"
+               Visibility="{Binding IsDms1Ready, Converter={StaticResource bool2vis}}"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Bottom"/>
+
+        <Border Grid.Row="1"
+                BorderBrush="#FF8A8A8A"
+                BorderThickness="0,3">
+            <Canvas x:Name="cnvDmsDiff"/>
+        </Border>
+        <Border Grid.Row="1"
+                Padding="4"
+                HorizontalAlignment="Right"
+                Background="#E0E0E0"
+                BorderBrush="#FF8A8A8A"
+                BorderThickness="3">
+            <local:Distance x:Name="dstDistance"/>
+        </Border>
+
+        <Label Grid.Row="2"
+               Content="Click to select a DMS measurement file"
+               HorizontalContentAlignment="Center"
+               VerticalContentAlignment="Center"
+               MouseDown="Dms2Prompt_MouseDown"/>
+        <Canvas x:Name="cnvDms2" Grid.Row="2"
+                Visibility="{Binding IsDms2Ready, Converter={StaticResource bool2vis}}"
+                MouseDown="Dms2Prompt_MouseDown"/>
+        <Label x:Name="lblDms2" Grid.Row="2"
+               Visibility="{Binding IsDms2Ready, Converter={StaticResource bool2vis}}"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Bottom"/>
+    </Grid>
+</Window>
