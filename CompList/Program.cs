@@ -1,17 +1,18 @@
 ﻿using DmsComparison;
 using DmsComparison.Algorithms;
-using System.Security.Cryptography;
 
-/*
-var ofd = new Microsoft.Win32.OpenFolderDialog();
+// Select data folder
+var ofd = new OpenFolder.FolderPicker
+{
+    OkButtonLabel = "Load",
+    Title = "Select a folder with DMS data"
+};
 if (ofd.ShowDialog() == false)
 {
     return;
 }
 
-var folder = ofd.FolderName;*/
-
-var folder = @"C:\Users\olequ\Documents\Data\Smellodi\Naa\Repeated\without-filter";
+var folder = ofd.ResultPath;
 var files = Directory.EnumerateFiles(folder, "*.json");
 
 // Load DMS data
@@ -73,12 +74,12 @@ foreach (var algorithm in algorithms)
                 for (int j = i + 1; j < dmsSet2.Length; j++)
                 {
                     distanceCount += 1;
-                    distanceSum += algorithm.ComputeDistance(dmsSet1[i].Data, dmsSet2[j].Data, false);
+                    distanceSum += algorithm.ComputeDistance(dmsSet1[i].Data, dmsSet2[j].Data, true);
                 }
             }
 
             var distance = distanceSum / (distanceCount > 0 ? distanceCount : 1);
-            results.Add($"{mixType1[3..]}-{mixType2[3..]}", distance);
+            results.Add($"{mixType1[3..]}/{mixType2[3..]}", distance);
         }
     }
 
@@ -86,13 +87,16 @@ foreach (var algorithm in algorithms)
 }
 
 // Print results
+const int colSize_first = 14;
+const int colSize_rest = 8;
 
-Console.Write("              ");
+Console.Write(new string(' ', colSize_first));
+
 foreach (var (_, comparisons) in distances)
 {
     foreach (var (pair, _) in comparisons)
     {
-        Console.Write($"{pair,16}");
+        Console.Write($"{pair,colSize_rest}");
     }
     break;
 }
@@ -100,10 +104,10 @@ Console.WriteLine();
 
 foreach (var (algorithm, comparisons) in distances)
 {
-    Console.Write($"{algorithm.Name,14}");
+    Console.Write($"{algorithm.Name,colSize_first}");
     foreach (var (_, distance) in comparisons)
     {
-        Console.Write($"{distance,16:F3}");
+        Console.Write($"{distance,colSize_rest:F3}");
     }
     Console.WriteLine();
 }
