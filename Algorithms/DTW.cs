@@ -33,5 +33,5 @@ internal class DTW : Algorithm
         return result[data1.Length, data2.Length] / ((data1.Length + data2.Length + 2) / 2);
     }
 
-    const int WindowSize = 1;
+    const int WindowSize = 5;
 }

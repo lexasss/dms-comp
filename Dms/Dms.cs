@@ -10,6 +10,8 @@ public class Dms
     public int Height { get; init; }
     public string? Info { get; init; }
     public string Filename { get; init; }
+    public string Date { get; init; }
+    public string Time { get; init; }
     public float[] Data => _scan.MeasurementData.IntensityTop;
 
     public Dms(IonVision.Scan scan, string filename)
@@ -17,6 +19,10 @@ public class Dms
         _scan = scan;
 
         Filename = filename;
+
+        var dateTime = filename[5..^1].Split(" ");
+        Date = dateTime[0];
+        Time = dateTime[1];
 
         var usv = scan.MeasurementData.Usv;
         var firstUsv = usv[0];

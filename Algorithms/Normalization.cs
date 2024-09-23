@@ -35,7 +35,7 @@ public class Normalization
         }
         else
         {
-            throw new NotImplementedException($"Normaltion of type '{type}' is not implemented");
+            throw new NotImplementedException($"Normalization of type '{type}' is not implemented");
         }
     }
 }

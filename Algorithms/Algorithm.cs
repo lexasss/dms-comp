@@ -42,7 +42,7 @@ public abstract class Algorithm
     private static float[] Rectify(float[] data)
     {
         var median = GetMedian(data);
-        System.Diagnostics.Debug.WriteLine($"[DIST] Median: {median:F6}");
+        //System.Diagnostics.Debug.WriteLine($"[DIST] Median: {median:F6}");
 
         // Remove median
         float[] result = (float[])data.Clone();
@@ -58,7 +58,7 @@ public abstract class Algorithm
             t[i] = Math.Abs(t[i]);
         }
         var medianDeviation = RectifiedMedianFactor * GetMedian(t);
-        System.Diagnostics.Debug.WriteLine($"[DIST] Median deviation: {medianDeviation:F6}");
+        //System.Diagnostics.Debug.WriteLine($"[DIST] Median deviation: {medianDeviation:F6}");
 
         // Subtract median deviation: anything within the median deviation range becomes 0
         for (int i = 0; i < result.Length; i++)

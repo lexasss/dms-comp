@@ -2,6 +2,7 @@
 using DmsComparison.Algorithms;
 
 // Options
+const bool DEBUG = false;
 const bool VERBOSE = false;
 const bool USE_RECTIFICATION = true;
 const Normalization.Type NORMALIZATION_TYPE = Normalization.Type.MinMax;
@@ -35,7 +36,7 @@ var mixDmsSet = new Dictionary<string, HashSet<Dms>>();
 foreach (var file in files)
 {
     var dms = Dms.Load(file);
-    string? mixType = dms?.Info?.Split(",")[0];
+    string? mixType = dms?.Info?.Split(",")[0][3..];
     if (dms == null || mixType == null)
         continue;
 
@@ -48,20 +49,18 @@ foreach (var file in files)
     set.Add(dms);
 
     if (VERBOSE)
-    {
         Console.WriteLine($"Loading {file}");
-    }
 }
 
 if (VERBOSE)
 {
-    Console.WriteLine($"Sets:");
+    Console.WriteLine($"\nSets:");
     foreach (var (mix, list) in mixDmsSet)
     {
         Console.WriteLine($"  Mix: {mix}");
         foreach (var dms in list)
         {
-            Console.WriteLine($"    {dms.Filename}");
+            Console.WriteLine($"    {dms.Time}");
         }
     }
 }
@@ -74,7 +73,7 @@ foreach (var algorithmType in algorithmTypes)
 {
     if (Activator.CreateInstance(algorithmType) is Algorithm algorithm)
     {
-        if (VERBOSE && algorithm.Name == "DTW")
+        if (DEBUG && algorithm.Name == "DTW")
             continue;
         algorithms.Add(algorithm);
     }
@@ -83,18 +82,12 @@ foreach (var algorithmType in algorithmTypes)
 // Compute distances
 var distances = new Dictionary<Algorithm, Dictionary<string, double>>();
 
-Console.WriteLine("Calculating pairwise distances:");
+Console.WriteLine("\nCalculating pairwise distances:");
 foreach (var algorithm in algorithms)
 {
+    Console.Write($"{algorithm.Name} . . . ");
     if (VERBOSE)
-    {
-        Console.WriteLine($"{algorithm.Name} . . . ");
-        System.Diagnostics.Debug.WriteLine($"{algorithm.Name} . . . ");
-    }
-    else
-    {
-        Console.Write($"{algorithm.Name} . . . ");
-    }
+        Console.WriteLine();
 
     var results = new Dictionary<string, double>();
     distances.Add(algorithm, results);
@@ -108,9 +101,7 @@ foreach (var algorithm in algorithms)
             var mixType2 = mixTypes.ElementAt(m);
 
             if (VERBOSE)
-            {
-                Console.WriteLine($"{mixType1} vs {mixType2}");
-            }
+                Console.WriteLine($"  {mixType1} vs {mixType2}");
 
             double distanceSum = 0;
             int distanceCount = 0;
@@ -134,19 +125,16 @@ foreach (var algorithm in algorithms)
                     distanceSum += dist;
 
                     if (VERBOSE)
-                    {
-                        Console.WriteLine($"{dms1.Filename}/{dms2.Filename} {mixType1[3..]}/{mixType2[3..]}  {dist:F4}");
-                        System.Diagnostics.Debug.WriteLine($"{mixType1[3..]}/{mixType2[3..]}  {dist:F4}");
-                    }
+                        Console.WriteLine($"    {dms1.Time} / {dms2.Time}   =>   {dist:F4}");
                 }
             }
 
             var distance = distanceSum / (distanceCount > 0 ? distanceCount : 1);
-            results.Add($"{mixType1[3..]}/{mixType2[3..]}", distance);
+            results.Add($"{mixType1}/{mixType2}", distance);
         }
     }
 
-    Console.WriteLine("done.");
+    Console.WriteLine("  done.");
 }
 
 // Print results
@@ -172,7 +160,7 @@ foreach (var (algorithm, comparisons) in distances)
     Console.Write($"{algorithm.Name,-colSize_first}");
     foreach (var (_, distance) in comparisons)
     {
-        Console.Write($"{distance,-colSize_rest:F3}");
+        Console.Write($"{distance,-colSize_rest:F4}");
     }
     Console.WriteLine();
 }
