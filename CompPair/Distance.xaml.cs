@@ -25,8 +25,37 @@ public partial class Distance : UserControl, INotifyPropertyChanged
         InitializeComponent();
         DataContext = this;
 
-        // Creates dynamically a list of radio button in the UI
+        CreateUiListOfAlgorithms();
+        CreateUiListOfNormalizations();
+    }
 
+    public void Clear()
+    {
+        _data1 = null;
+        _data2 = null;
+
+        Update();
+    }
+
+    public void Update(Dms dms1, Dms dms2)
+    {
+        _data1 = dms1.Data;
+        _data2 = dms2.Data;
+
+        Update();
+    }
+
+    // Internal
+
+    Algorithm? _algorithm = null;
+    bool _shouldRectify = false;
+    Normalization.Type _normalizationType = Normalization.Type.None;
+
+    float[]? _data1 = null;
+    float[]? _data2 = null;
+
+    private void CreateUiListOfAlgorithms()
+    {
         var algorithmTypes = Algorithm.GetDescendantTypes();
         foreach (var algorithmType in algorithmTypes)
         {
@@ -62,29 +91,31 @@ public partial class Distance : UserControl, INotifyPropertyChanged
         }
     }
 
-    public void Clear()
+    private void CreateUiListOfNormalizations()
     {
-        _data1 = null;
-        _data2 = null;
+        var normalizationTypes = Enum.GetValues<Normalization.Type>();
+        foreach (var normalizationType in normalizationTypes)
+        {
+            var rdb = new RadioButton()
+            {
+                GroupName = "Normalization",
+                Content = normalizationType,
+                IsChecked = normalizationType == _normalizationType,
+                Tag = normalizationType
+            };
+            rdb.Click += (s, e) =>
+            {
+                var normalizationType = (Normalization.Type?)(s as RadioButton)?.Tag;
+                if (normalizationType != null && normalizationType != _normalizationType)
+                {
+                    _normalizationType = (Normalization.Type)normalizationType;
+                    Update();
+                }
+            };
 
-        Update();
+            stpNormalizationType.Children.Add(rdb);
+        }
     }
-
-    public void Update(Dms dms1, Dms dms2)
-    {
-        _data1 = dms1.Data;
-        _data2 = dms2.Data;
-
-        Update();
-    }
-
-    // Internal
-
-    Algorithm? _algorithm = null;
-    bool _shouldRectify = false;
-
-    float[]? _data1 = null;
-    float[]? _data2 = null;
 
     private void Update()
     {
@@ -95,7 +126,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
             return;
         }
 
-        double result = _algorithm.ComputeDistance(_data1, _data2, _shouldRectify);
+        double result = _algorithm.ComputeDistance(_data1, _data2, _shouldRectify, _normalizationType);
 
         lblDistance.Content = $"{result:F3}";
     }

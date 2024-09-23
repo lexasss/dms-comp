@@ -1,10 +1,10 @@
 ﻿namespace DmsComparison.Algorithms;
 
-internal class Eucledian : Algorithm
+internal class Euclidian : Algorithm
 {
     // https://pypi.org/project/distance-metrics-mcda/
 
-    public override string Name => "Eucledian";
+    public override string Name => "Euclidian";
 
     protected override double ComputeDistance(float[] data1, float[] data2)
     {

@@ -60,6 +60,11 @@
             <CheckBox x:Name="chkRectify"
                   Content="Rectify"
                   IsChecked="{Binding ShouldRectify}"/>
+            <Separator/>
+            <Label Content="Normalization"/>
+            <StackPanel x:Name="stpNormalizationType">
+                <!-- to be fill in the code -->
+            </StackPanel>
         </StackPanel>
 
         <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3">

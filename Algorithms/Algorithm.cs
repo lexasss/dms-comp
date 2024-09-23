@@ -1,6 +1,4 @@
-﻿using MathNet.Numerics.Statistics;
-
-namespace DmsComparison.Algorithms;
+﻿namespace DmsComparison.Algorithms;
 
 public abstract class Algorithm
 {
@@ -13,7 +11,8 @@ public abstract class Algorithm
     public static Type[] GetDescendantTypes() => System.Reflection.Assembly.GetExecutingAssembly().GetTypes()
         .Where(type => type.IsSubclassOf(typeof(Algorithm))).ToArray();
 
-    public double ComputeDistance(float[] data1, float[] data2, bool shouldRectify)
+    public double ComputeDistance(float[] data1, float[] data2, bool shouldRectify,
+        Normalization.Type normalizationType = Normalization.Type.None)
     {
         data1 = (float[])data1.Clone();
         data2 = (float[])data2.Clone();
@@ -26,7 +25,10 @@ public abstract class Algorithm
             data2 = Rectify(data2);
         }
 
-        return ComputeDistance(data1, data2);
+        Normalization.Process(data1, normalizationType);
+        Normalization.Process(data2, normalizationType);
+
+        return Math.Abs(ComputeDistance(data1, data2));
     }
 
     // Internal
@@ -39,8 +41,8 @@ public abstract class Algorithm
 
     private static float[] Rectify(float[] data)
     {
-        var median = data.Median();
-        System.Diagnostics.Debug.WriteLine($"[DIST] Median: {median:F3}");
+        var median = GetMedian(data);
+        System.Diagnostics.Debug.WriteLine($"[DIST] Median: {median:F6}");
 
         // Remove median
         float[] result = (float[])data.Clone();
@@ -55,8 +57,8 @@ public abstract class Algorithm
         {
             t[i] = Math.Abs(t[i]);
         }
-        var medianDeviation = RectifiedMedianFactor * t.Median();
-        System.Diagnostics.Debug.WriteLine($"[DIST] Median deviation: {medianDeviation:F3}");
+        var medianDeviation = RectifiedMedianFactor * GetMedian(t);
+        System.Diagnostics.Debug.WriteLine($"[DIST] Median deviation: {medianDeviation:F6}");
 
         // Subtract median deviation: anything within the median deviation range becomes 0
         for (int i = 0; i < result.Length; i++)
@@ -70,5 +72,19 @@ public abstract class Algorithm
         }
 
         return result;
+    }
+
+    private static float GetMedian(float[] data)
+    {
+        if (data == null || data.Length == 0)
+            return 0;
+
+        float[] sorted = (float[])data.Clone();
+        Array.Sort(sorted);
+
+        int size = sorted.Length;
+        int mid = size / 2;
+        float median = (size % 2 != 0) ? sorted[mid] : (sorted[mid] + sorted[mid - 1]) / 2;
+        return median;
     }
 }

@@ -4,7 +4,7 @@ internal class WaveHedges : Algorithm
 {
     // https://github.com/aziele/statistical-distance/blob/main/distance.py
 
-    public override string Name => "Wave Hedges";
+    public override string Name => "Wave_Hedges";
 
     protected override double ComputeDistance(float[] data1, float[] data2)
     {

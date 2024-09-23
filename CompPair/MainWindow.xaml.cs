@@ -53,7 +53,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             DisplayDms(canvas, dms);
         }
 
-        info.Content = dms?.Info;
+        info.Content = dms == null ? null : $"{dms.Filename} | {dms.Info}";
     }
 
     private void DisplayDms(Canvas canvas, Dms dms)

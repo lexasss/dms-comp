@@ -9,11 +9,14 @@ public class Dms
     public int Width { get; init; }
     public int Height { get; init; }
     public string? Info { get; init; }
+    public string Filename { get; init; }
     public float[] Data => _scan.MeasurementData.IntensityTop;
 
-    public Dms(IonVision.Scan scan)
+    public Dms(IonVision.Scan scan, string filename)
     {
         _scan = scan;
+
+        Filename = filename;
 
         var usv = scan.MeasurementData.Usv;
         var firstUsv = usv[0];
@@ -38,7 +41,7 @@ public class Dms
             var dms = JsonSerializer.Deserialize<IonVision.Scan>(json);
             if (dms != null)
             {
-                return new Dms(dms);
+                return new Dms(dms, Path.GetFileNameWithoutExtension(filename));
             }
             else throw new Exception("Cannot read DMS data");
         }
