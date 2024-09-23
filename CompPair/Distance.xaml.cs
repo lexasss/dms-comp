@@ -27,7 +27,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
 
         // Creates dynamically a list of radio button in the UI
 
-        var algorithmTypes = Algorithm.GetAllAlgorithmTypes();
+        var algorithmTypes = Algorithm.GetDescendantTypes();
         foreach (var algorithmType in algorithmTypes)
         {
             var algorithm = Activator.CreateInstance(algorithmType) as Algorithm;

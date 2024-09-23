@@ -10,7 +10,7 @@ public abstract class Algorithm
     /// Returns types of all algorithms derived from "Algorithm"
     /// </summary>
     /// <returns>List of types</returns>
-    public static Type[] GetAllAlgorithmTypes() => System.Reflection.Assembly.GetExecutingAssembly().GetTypes()
+    public static Type[] GetDescendantTypes() => System.Reflection.Assembly.GetExecutingAssembly().GetTypes()
         .Where(type => type.IsSubclassOf(typeof(Algorithm))).ToArray();
 
     public double ComputeDistance(float[] data1, float[] data2, bool shouldRectify)

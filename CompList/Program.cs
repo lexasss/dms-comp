@@ -1,6 +1,9 @@
 ﻿using DmsComparison;
 using DmsComparison.Algorithms;
 
+// Options
+const bool USE_RECTIFICATION = true;
+
 // Select data folder
 var ofd = new OpenFolder.FolderPicker
 {
@@ -15,6 +18,10 @@ if (ofd.ShowDialog() == false)
 var folder = ofd.ResultPath;
 var files = Directory.EnumerateFiles(folder, "*.json");
 
+Console.WriteLine($"DMS source folder: {folder}");
+Console.WriteLine($"DMS files: {files.Count()}");
+Console.WriteLine();
+
 // Load DMS data
 var dmsList = new Dictionary<string, HashSet<Dms>>();
 foreach (var file in files)
@@ -24,23 +31,24 @@ foreach (var file in files)
     if (dms == null || mixType == null)
         continue;
 
-    if (!dmsList.ContainsKey(mixType))
+    if (!dmsList.TryGetValue(mixType, out HashSet<Dms>? set))
     {
-        dmsList.Add(mixType, []);
+        set = ([]);
+        dmsList.Add(mixType, set);
     }
 
-    var set = dmsList[mixType];
     set.Add(dms);
 }
 
 // Load algorithms
 var algorithms = new List<Algorithm>();
-var algorithmTypes = Algorithm.GetAllAlgorithmTypes();
+var algorithmTypes = Algorithm.GetDescendantTypes();
 foreach (var algorithmType in algorithmTypes)
 {
-    var algorithm = Activator.CreateInstance(algorithmType) as Algorithm;
-    if (algorithm != null)
+    if (Activator.CreateInstance(algorithmType) is Algorithm algorithm)
     {
+        if (algorithm.Name == "DTW")
+            continue;
         algorithms.Add(algorithm);
     }
 }
@@ -48,10 +56,10 @@ foreach (var algorithmType in algorithmTypes)
 // Compute distances
 var distances = new Dictionary<Algorithm, Dictionary<string, double>>();
 
-Console.WriteLine("Calculating:");
+Console.WriteLine("Calculating pairwise distances:");
 foreach (var algorithm in algorithms)
 {
-    Console.Write($"Algorithm: {algorithm.Name} . . . ");
+    Console.Write($"{algorithm.Name} . . . ");
 
     var results = new Dictionary<string, double>();
     distances.Add(algorithm, results);
@@ -74,7 +82,7 @@ foreach (var algorithm in algorithms)
                 for (int j = i + 1; j < dmsSet2.Length; j++)
                 {
                     distanceCount += 1;
-                    distanceSum += algorithm.ComputeDistance(dmsSet1[i].Data, dmsSet2[j].Data, true);
+                    distanceSum += algorithm.ComputeDistance(dmsSet1[i].Data, dmsSet2[j].Data, USE_RECTIFICATION);
                 }
             }
 
@@ -90,13 +98,15 @@ foreach (var algorithm in algorithms)
 const int colSize_first = 14;
 const int colSize_rest = 8;
 
-Console.Write(new string(' ', colSize_first));
+Console.WriteLine();
+Console.Write("_");
+Console.Write(new string(' ', colSize_first - 1));
 
 foreach (var (_, comparisons) in distances)
 {
     foreach (var (pair, _) in comparisons)
     {
-        Console.Write($"{pair,colSize_rest}");
+        Console.Write($"{pair,-colSize_rest}");
     }
     break;
 }
@@ -104,10 +114,10 @@ Console.WriteLine();
 
 foreach (var (algorithm, comparisons) in distances)
 {
-    Console.Write($"{algorithm.Name,colSize_first}");
+    Console.Write($"{algorithm.Name,-colSize_first}");
     foreach (var (_, distance) in comparisons)
     {
-        Console.Write($"{distance,colSize_rest:F3}");
+        Console.Write($"{distance,-colSize_rest:F3}");
     }
     Console.WriteLine();
 }
