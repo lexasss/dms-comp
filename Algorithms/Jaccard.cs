@@ -6,7 +6,7 @@ internal class Jaccard : Algorithm
 
     public override string Name => "Jaccard";
 
-    protected override double ComputeDistance(float[] data1, float[] data2)
+    protected override double ComputeDistance(ReadOnlySpan<float> data1, ReadOnlySpan<float> data2)
     {
         double numerator = 0;
         double denominator = 0;

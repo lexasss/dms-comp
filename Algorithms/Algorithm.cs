@@ -37,7 +37,7 @@ public abstract class Algorithm
 
     protected bool _isDataRectified { get; private set; } = false;
 
-    protected abstract double ComputeDistance(float[] data1, float[] data2);
+    protected abstract double ComputeDistance(ReadOnlySpan<float> data1, ReadOnlySpan<float> data2);
 
     private static float[] Rectify(float[] data)
     {

@@ -6,7 +6,7 @@ internal class Hamming : Algorithm
 
     public override string Name => "Hamming";
 
-    protected override double ComputeDistance(float[] data1, float[] data2)
+    protected override double ComputeDistance(ReadOnlySpan<float> data1, ReadOnlySpan<float> data2)
     {
         double sum = 0;
         int count = 0;

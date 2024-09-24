@@ -6,7 +6,7 @@ internal class DTW : Algorithm
 
     public override string Name => "DTW";
 
-    protected override double ComputeDistance(float[] data1, float[] data2)
+    protected override double ComputeDistance(ReadOnlySpan<float> data1, ReadOnlySpan<float> data2)
     {
         float[,] result = new float[data1.Length + 1, data2.Length + 1];
 
