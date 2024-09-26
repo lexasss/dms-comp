@@ -6,6 +6,8 @@ internal class DTW : Algorithm
 
     public override string Name => "DTW";
 
+    public const int WindowSize = 10;
+
     protected override double ComputeDistance(ReadOnlySpan<float> data1, ReadOnlySpan<float> data2)
     {
         float[,] result = new float[data1.Length + 1, data2.Length + 1];
@@ -32,6 +34,4 @@ internal class DTW : Algorithm
 
         return result[data1.Length, data2.Length] / ((data1.Length + data2.Length + 2) / 2);
     }
-
-    const int WindowSize = 5;
 }
