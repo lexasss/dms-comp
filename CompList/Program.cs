@@ -352,9 +352,7 @@ public class Program
                             if (minDistance > dist)
                                 minDistance = dist;
                             if (dmrDist <= smrDist)
-                            {
                                 count++;
-                            }
                         }
 
             var oddPerc = 100.0 * count / totalCount;
@@ -373,6 +371,7 @@ public class Program
         foreach (var sameMixResult in sameMixtures)
             distOfSameMixtures.AddRange(sameMixResult.Distances);
         distOfSameMixtures.Sort();
+        distOfSameMixtures.Reverse();
 
         var distOfDiffMixtures = new List<double>();
         foreach (var diffMixResult in diffMixtures)
@@ -380,7 +379,7 @@ public class Program
         distOfDiffMixtures.Sort();
 
         double threshold = 0;
-        for (int i = 0, j = distOfSameMixtures.Count - 1; i < distOfDiffMixtures.Count && j >= 0; i++, j--)
+        for (int i = 0, j = 0; i < distOfDiffMixtures.Count && j < distOfSameMixtures.Count; i++, j++)
             if (distOfDiffMixtures[i] > distOfSameMixtures[j])
             {
                 threshold = (distOfDiffMixtures[i] + distOfSameMixtures[j]) / 2;
