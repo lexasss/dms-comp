@@ -3,6 +3,7 @@
 using DmsComparison;
 using DmsComparison.Algorithms;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 // A key-value pair where the key is the mixture type, 
@@ -322,7 +323,7 @@ public class Program
     private static void PrintSuspiciousPairs(TestResult[] results)
     {
         Console.WriteLine();
-        Console.WriteLine("Are there any odd results?");
+        Console.WriteLine("Exception analysis");
 
         Array.Sort(results, (a, b) =>
         {
@@ -340,7 +341,6 @@ public class Program
             int totalCount = 0;
             int count = 0;
             double minDistance = double.MaxValue;
-            double avgDistanceAtMin = 0;
 
             foreach (var sameMixResult in sameMixtures)
                 foreach (var diffMixResult in diffMixtures)
@@ -354,17 +354,41 @@ public class Program
                             if (dmrDist <= smrDist)
                             {
                                 count++;
-                                avgDistanceAtMin += (dmrDist + smrDist) / 2;
                             }
                         }
 
             var oddPerc = 100.0 * count / totalCount;
-            var threshold = avgDistanceAtMin / (count > 0 ? count : 1);
-            string s = $"{testResult.Algorithm.Name,-COLSIZE_COND} {testResult.Options,-COLSIZE_COND} {oddPerc,-COLSIZE_DIST:F2} {minDistance,-COLSIZE_DIST:F4} {threshold,-COLSIZE_DIST:F4}";
+            var (threshold, successRate) = EstimateThreshold(sameMixtures, diffMixtures);
+            string s = $"{testResult.Algorithm.Name,-COLSIZE_COND} {testResult.Options,-COLSIZE_COND} {oddPerc,-COLSIZE_DIST:F2} {minDistance,-COLSIZE_DIST:F4} {threshold,-COLSIZE_DIST:F4} {successRate,-COLSIZE_DIST:F4}";
             list.Add(s);
         }
 
         foreach (var item in list)
             Console.WriteLine(item);
+    }
+
+    private static (double, double) EstimateThreshold(IEnumerable<ComparisonResult> sameMixtures, IEnumerable<ComparisonResult> diffMixtures)
+    {
+        var distOfSameMixtures = new List<double>();
+        foreach (var sameMixResult in sameMixtures)
+            distOfSameMixtures.AddRange(sameMixResult.Distances);
+        distOfSameMixtures.Sort();
+
+        var distOfDiffMixtures = new List<double>();
+        foreach (var diffMixResult in diffMixtures)
+            distOfDiffMixtures.AddRange(diffMixResult.Distances);
+        distOfDiffMixtures.Sort();
+
+        double threshold = 0;
+        for (int i = 0, j = distOfSameMixtures.Count - 1; i < distOfDiffMixtures.Count && j >= 0; i++, j--)
+            if (distOfDiffMixtures[i] > distOfSameMixtures[j])
+            {
+                threshold = (distOfDiffMixtures[i] + distOfSameMixtures[j]) / 2;
+                break;
+            }
+
+        return (threshold,
+            (double)(distOfSameMixtures.Where(d => d < threshold).Count() + distOfDiffMixtures.Where(d => d >= threshold).Count()) / 
+                (distOfSameMixtures.Count + distOfDiffMixtures.Count));
     }
 }
