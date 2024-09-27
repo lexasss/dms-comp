@@ -4,7 +4,10 @@ using DmsComparison;
 using DmsComparison.Algorithms;
 using System;
 using System.Linq;
+using System.Windows.Shapes;
 
+// A key-value pair where the key is the mixture type, 
+// and the value is a set of measurements of this mixture type
 using MixtureDatasets = KeyValuePair<string, HashSet<DmsComparison.Dms>>;
 
 class Options(bool useRectification, Normalization.Type normalizationType)
@@ -17,14 +20,27 @@ class Options(bool useRectification, Normalization.Type normalizationType)
         return $"{rect},{NormalizationType}";
     }
 }
-record MixtureID(string Id);
-record ComparisonResult(string Mixture, double Value);
+class MixtureID(string mix1, string mix2)
+{
+    public string Id => $"{mix1}/{mix2}";
+    public override string ToString() => Id;
+}
+record ComparisonResult(MixtureID ID, double Mean, double Std);
 record TestResult(Options Options, Algorithm Algorithm, ComparisonResult[] Comparisons);
+
+enum PrintedInfo
+{
+    Mean,
+    Std
+}
 
 public class Program
 {
     const bool VERBOSE = false;
-    const bool DEBUG = true;
+    const bool DEBUG = false;
+
+    const int COLSIZE_COND = 14;
+    const int COLSIZE_DIST = 8;
 
     public static void Main()
     {
@@ -32,12 +48,12 @@ public class Program
         if (files == null)
             return;
 
-        var mixDmsSets = LoadData(files);
+        var mixDatasets = LoadData(files);
 
         if (VERBOSE)
         {
             Console.WriteLine($"\nSets:");
-            foreach (var (mix, list) in mixDmsSets)
+            foreach (var (mix, list) in mixDatasets)
             {
                 Console.WriteLine($"  Mix: {mix}");
                 foreach (var dms in list)
@@ -48,27 +64,20 @@ public class Program
         }
 
         var algorithms = LoadAlgorithms();
+        var options = PermutateOptions();
 
-        Options[] options = [
-            new Options(false, Normalization.Type.None),
-            new Options(true, Normalization.Type.None),
-            new Options(false, Normalization.Type.MinMax),
-            new Options(true, Normalization.Type.MinMax)
-        ];
+        var results = Run(options, algorithms, mixDatasets);
 
-        var results = Run(options, algorithms.ToArray(), mixDmsSets);
+        var headers = results.First().Comparisons.Select(c => c.ID).ToArray();
 
-        var f = results.First();
-        PrintHeader(f.Comparisons);
-        PrintByOption(results);
+        PrintHeader(headers, ["Options", "Algorithm"]);
+        PrintByOption(results, PrintedInfo.Mean);
+        PrintByOption(results, PrintedInfo.Std);
 
-        Console.WriteLine();
-        PrintHeader(f.Comparisons);
-        PrintByAlgorithm(results);
+        PrintHeader(headers, ["Algorithms", "Options"]);
+        PrintByAlgorithm(results, PrintedInfo.Mean);
+        PrintByAlgorithm(results, PrintedInfo.Std);
     }
-
-    const int COLSIZE_ALG = 14;
-    const int COLSIZE_DST = 8;
 
     private static string[]? SelectFolder()
     {
@@ -87,14 +96,10 @@ public class Program
 
         Console.WriteLine($"DMS source folder: {folder}");
         Console.WriteLine($"DMS files: {files.Count()}");
-        Console.WriteLine();
 
         return files.ToArray();
     }
 
-    /// <param name="files">a list of full pathes to JSON files</param>
-    /// <returns>list of key-value pairs where key is the mixture type, 
-    /// and value is a set of measurements of this mixture type</returns>
     private static MixtureDatasets[] LoadData(string[] files)
     {
         var result = new Dictionary<string, HashSet<Dms>>();
@@ -137,12 +142,21 @@ public class Program
         return result.ToArray();
     }
 
+    private static Options[] PermutateOptions() => [
+        new Options(false, Normalization.Type.None),
+        new Options(true, Normalization.Type.None),
+        new Options(false, Normalization.Type.Linear),
+        new Options(true, Normalization.Type.Linear),
+        new Options(false, Normalization.Type.MinMax),
+        new Options(true, Normalization.Type.MinMax)
+    ];
+
     private static TestResult Test(
         Options options,
         Algorithm algorithm,
         MixtureDatasets[] allMixDatasets)
     {
-        Console.Write($"{algorithm.Name} . . . ");
+        Console.Write($"{algorithm.Name,-15}");
         if (VERBOSE)
             Console.WriteLine();
 
@@ -161,9 +175,11 @@ public class Program
 
                 double distanceSum = 0;
                 int distanceCount = 0;
+                var distances = new List<double>();
 
                 var dmsSet1 = allMixDatasets.First(kv => kv.Key == mixType1).Value.ToArray();
                 var dmsSet2 = allMixDatasets.First(kv => kv.Key == mixType2).Value.ToArray();
+
                 for (int i = 0; i < dmsSet1.Length; i++)
                 {
                     var jStart = mixType1 == mixType2 ? i + 1 : 0;
@@ -180,18 +196,21 @@ public class Program
                             options.UseRectification,
                             options.NormalizationType);
                         distanceSum += dist;
+                        distances.Add(dist);
 
                         if (VERBOSE)
                             Console.WriteLine($"    {dms1.Time} / {dms2.Time}   =>   {dist:F4}");
                     }
                 }
 
-                var distance = distanceSum / (distanceCount > 0 ? distanceCount : 1);
-                results.Add(new ComparisonResult($"{mixType1}/{mixType2}", distance));
+                var mean = distanceSum / (distanceCount > 0 ? distanceCount : 1);
+                var std = Math.Sqrt(distances.Sum(dist => (dist - mean) * (dist - mean)) / (distances.Count - 1));
+
+                results.Add(new ComparisonResult(new MixtureID(mixType1, mixType2), mean, std));
             }
         }
 
-        Console.WriteLine("  done.");
+        Console.WriteLine("  done");
         return new TestResult(options, algorithm, results.ToArray());
     }
 
@@ -200,7 +219,7 @@ public class Program
         Algorithm[] algorithms,
         MixtureDatasets[] mixDataset)
     {
-        var distances = new List<TestResult>();
+        var results = new List<TestResult>();
 
         foreach (var options in optionsSet)
         {
@@ -211,28 +230,32 @@ public class Program
 
             foreach (var algorithm in algorithms)
             {
-                var results = Test(options, algorithm, mixDataset);
-                distances.Add(results);
+                var testResult = Test(options, algorithm, mixDataset);
+                results.Add(testResult);
             }
         }
 
-        return distances.ToArray();
+        return results.ToArray();
     }
 
-    private static void PrintHeader(ComparisonResult[] comparisonResults)
+    private static void PrintHeader(MixtureID[] mixIDs, string[] titles)
     {
         Console.WriteLine();
-        Console.Write("_");
-        Console.Write(new string(' ', COLSIZE_ALG - 1));
 
-        foreach (var (pair, _) in comparisonResults)
+        while (titles.Length < 2)
+            titles = [..titles, "_"];
+
+        Console.Write($"{titles[0],-COLSIZE_COND}");
+        Console.Write($"{titles[1],-COLSIZE_COND}");
+
+        foreach (var mixID in mixIDs)
         {
-            Console.Write($"{pair,-COLSIZE_DST}");
+            Console.Write($"{mixID,-COLSIZE_DIST}");
         }
         Console.WriteLine();
     }
 
-    private static void PrintByOption(TestResult[] results)
+    private static void PrintByAlgorithm(TestResult[] results, PrintedInfo target)
     {
         var list = new Dictionary<Algorithm, List<string>>();
         foreach (var testResult in results)
@@ -243,24 +266,25 @@ public class Program
                 list[testResult.Algorithm] = items;
             }
 
-            string s = $"{testResult.Options,-COLSIZE_ALG}";
-            foreach (var (_, distance) in testResult.Comparisons)
-            {
-                s += $"{distance,-COLSIZE_DST:F4}";
-            }
+            string s = $"{testResult.Algorithm.Name,-COLSIZE_COND}";
+            s += $"{testResult.Options,-COLSIZE_COND}";
+            if (target == PrintedInfo.Mean)
+                foreach (var (_, distance, _) in testResult.Comparisons)
+                    s += $"{distance,-COLSIZE_DIST:F4}";
+            else
+                foreach (var (_, _, std) in testResult.Comparisons)
+                    s += $"{std,-COLSIZE_DIST:F4}";
 
             items.Add(s);
         }
 
-        foreach (var (alg, lines) in list)
-        {
-            Console.WriteLine(alg.Name);
+        Console.WriteLine(target);
+        foreach (var (_, lines) in list)
             foreach (var line in lines)
                 Console.WriteLine(line);
-        }
     }
 
-    private static void PrintByAlgorithm(TestResult[] results)
+    private static void PrintByOption(TestResult[] results, PrintedInfo target)
     {
         var list = new Dictionary<Options, List<string>>();
         foreach (var testResult in results)
@@ -271,20 +295,22 @@ public class Program
                 list[testResult.Options] = items;
             }
 
-            string s = $"{testResult.Algorithm.Name,-COLSIZE_ALG}";
-            foreach (var (_, distance) in testResult.Comparisons)
-            {
-                s += $"{distance,-COLSIZE_DST:F4}";
-            }
+            string s = $"{testResult.Options,-COLSIZE_COND}";
+            s += $"{testResult.Algorithm.Name,-COLSIZE_COND}";
+
+            if (target == PrintedInfo.Mean)
+                foreach (var (_, distance, _) in testResult.Comparisons)
+                    s += $"{distance,-COLSIZE_DIST:F4}";
+            else
+                foreach (var (_, _, std) in testResult.Comparisons)
+                    s += $"{std,-COLSIZE_DIST:F4}";
 
             items.Add(s);
         }
 
-        foreach (var (opt, lines) in list)
-        {
-            Console.WriteLine(opt);
+        Console.WriteLine(target);
+        foreach (var (_, lines) in list)
             foreach (var line in lines)
                 Console.WriteLine(line);
-        }
     }
 }
