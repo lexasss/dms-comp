@@ -4,7 +4,6 @@ using DmsComparison;
 using DmsComparison.Algorithms;
 using System;
 using System.Linq;
-using System.Windows.Shapes;
 
 // A key-value pair where the key is the mixture type, 
 // and the value is a set of measurements of this mixture type
@@ -20,12 +19,13 @@ class Options(bool useRectification, Normalization.Type normalizationType)
         return $"{rect},{NormalizationType}";
     }
 }
-class MixtureID(string mix1, string mix2)
+class PairOfMixtures(string mix1, string mix2)
 {
     public string Id => $"{mix1}/{mix2}";
+    public bool IsSame => mix1 == mix2;
     public override string ToString() => Id;
 }
-record ComparisonResult(MixtureID ID, double Mean, double Std);
+record ComparisonResult(PairOfMixtures Mixtures, double Mean, double Std, double[] Distances);
 record TestResult(Options Options, Algorithm Algorithm, ComparisonResult[] Comparisons);
 
 enum PrintedInfo
@@ -68,7 +68,7 @@ public class Program
 
         var results = Run(options, algorithms, mixDatasets);
 
-        var headers = results.First().Comparisons.Select(c => c.ID).ToArray();
+        var headers = results.First().Comparisons.Select(c => c.Mixtures).ToArray();
 
         PrintHeader(headers, ["Options", "Algorithm"]);
         PrintByOption(results, PrintedInfo.Mean);
@@ -77,6 +77,8 @@ public class Program
         PrintHeader(headers, ["Algorithms", "Options"]);
         PrintByAlgorithm(results, PrintedInfo.Mean);
         PrintByAlgorithm(results, PrintedInfo.Std);
+
+        PrintSuspiciousPairs(results);
     }
 
     private static string[]? SelectFolder()
@@ -206,7 +208,7 @@ public class Program
                 var mean = distanceSum / (distanceCount > 0 ? distanceCount : 1);
                 var std = Math.Sqrt(distances.Sum(dist => (dist - mean) * (dist - mean)) / (distances.Count - 1));
 
-                results.Add(new ComparisonResult(new MixtureID(mixType1, mixType2), mean, std));
+                results.Add(new ComparisonResult(new PairOfMixtures(mixType1, mixType2), mean, std, distances.ToArray()));
             }
         }
 
@@ -238,7 +240,7 @@ public class Program
         return results.ToArray();
     }
 
-    private static void PrintHeader(MixtureID[] mixIDs, string[] titles)
+    private static void PrintHeader(PairOfMixtures[] mixPairs, string[] titles)
     {
         Console.WriteLine();
 
@@ -248,9 +250,9 @@ public class Program
         Console.Write($"{titles[0],-COLSIZE_COND}");
         Console.Write($"{titles[1],-COLSIZE_COND}");
 
-        foreach (var mixID in mixIDs)
+        foreach (var mixPair in mixPairs)
         {
-            Console.Write($"{mixID,-COLSIZE_DIST}");
+            Console.Write($"{mixPair,-COLSIZE_DIST}");
         }
         Console.WriteLine();
     }
@@ -268,12 +270,13 @@ public class Program
 
             string s = $"{testResult.Algorithm.Name,-COLSIZE_COND}";
             s += $"{testResult.Options,-COLSIZE_COND}";
+
             if (target == PrintedInfo.Mean)
-                foreach (var (_, distance, _) in testResult.Comparisons)
-                    s += $"{distance,-COLSIZE_DIST:F4}";
+                foreach (var comparison in testResult.Comparisons)
+                    s += $"{comparison.Mean,-COLSIZE_DIST:F4}";
             else
-                foreach (var (_, _, std) in testResult.Comparisons)
-                    s += $"{std,-COLSIZE_DIST:F4}";
+                foreach (var comparison in testResult.Comparisons)
+                    s += $"{comparison.Std,-COLSIZE_DIST:F4}";
 
             items.Add(s);
         }
@@ -299,11 +302,11 @@ public class Program
             s += $"{testResult.Algorithm.Name,-COLSIZE_COND}";
 
             if (target == PrintedInfo.Mean)
-                foreach (var (_, distance, _) in testResult.Comparisons)
-                    s += $"{distance,-COLSIZE_DIST:F4}";
+                foreach (var comparison in testResult.Comparisons)
+                    s += $"{comparison.Mean,-COLSIZE_DIST:F4}";
             else
-                foreach (var (_, _, std) in testResult.Comparisons)
-                    s += $"{std,-COLSIZE_DIST:F4}";
+                foreach (var comparison in testResult.Comparisons)
+                    s += $"{comparison.Std,-COLSIZE_DIST:F4}";
 
             items.Add(s);
         }
@@ -312,5 +315,56 @@ public class Program
         foreach (var (_, lines) in list)
             foreach (var line in lines)
                 Console.WriteLine(line);
+    }
+
+    record Condition(Algorithm Algorithm, Options Options);
+
+    private static void PrintSuspiciousPairs(TestResult[] results)
+    {
+        Console.WriteLine();
+        Console.WriteLine("Are there any odd results?");
+
+        Array.Sort(results, (a, b) =>
+        {
+            int result = a.Algorithm.Name.CompareTo(b.Algorithm.Name);
+            return result != 0 ? result : a.Options.ToString().CompareTo(b.Options.ToString());
+        });
+        
+        var list = new List<string>();
+
+        foreach (var testResult in results)
+        {
+            var sameMixtures = testResult.Comparisons.Where(cmps => cmps.Mixtures.IsSame);
+            var diffMixtures = testResult.Comparisons.Where(cmps => !cmps.Mixtures.IsSame);
+
+            int totalCount = 0;
+            int count = 0;
+            double minDistance = double.MaxValue;
+            double avgDistanceAtMin = 0;
+
+            foreach (var sameMixResult in sameMixtures)
+                foreach (var diffMixResult in diffMixtures)
+                    foreach (var smrDist in sameMixResult.Distances)
+                        foreach (var dmrDist in diffMixResult.Distances)
+                        {
+                            totalCount++;
+                            var dist = dmrDist - smrDist;
+                            if (minDistance > dist)
+                                minDistance = dist;
+                            if (dmrDist <= smrDist)
+                            {
+                                count++;
+                                avgDistanceAtMin += (dmrDist + smrDist) / 2;
+                            }
+                        }
+
+            var oddPerc = 100.0 * count / totalCount;
+            var threshold = avgDistanceAtMin / (count > 0 ? count : 1);
+            string s = $"{testResult.Algorithm.Name,-COLSIZE_COND} {testResult.Options,-COLSIZE_COND} {oddPerc,-COLSIZE_DIST:F2} {minDistance,-COLSIZE_DIST:F4} {threshold,-COLSIZE_DIST:F4}";
+            list.Add(s);
+        }
+
+        foreach (var item in list)
+            Console.WriteLine(item);
     }
 }
