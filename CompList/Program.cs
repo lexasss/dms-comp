@@ -2,11 +2,8 @@
 
 using DmsComparison;
 using DmsComparison.Algorithms;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
-// A key-value pair where the key is the mixture type, 
+// The key is a mixture type (2-digit number),
 // and the value is a set of measurements of this mixture type
 using MixtureDatasets = KeyValuePair<string, HashSet<DmsComparison.Dms>>;
 
@@ -16,7 +13,7 @@ class Options(bool useRectification, Normalization.Type normalizationType)
     public Normalization.Type NormalizationType => normalizationType;
     public override string ToString()
     {
-        string rect = UseRectification ? "T" : "F";
+        string rect = UseRectification ? "R" : "-";
         return $"{rect},{NormalizationType}";
     }
 }
@@ -29,7 +26,7 @@ class PairOfMixtures(string mix1, string mix2)
 record ComparisonResult(PairOfMixtures Mixtures, double Mean, double Std, double[] Distances);
 record TestResult(Options Options, Algorithm Algorithm, ComparisonResult[] Comparisons);
 
-enum PrintedInfo
+enum PrintTarget
 {
     Mean,
     Std
@@ -72,15 +69,17 @@ public class Program
         var headers = results.First().Comparisons.Select(c => c.Mixtures).ToArray();
 
         PrintHeader(headers, ["Options", "Algorithm"]);
-        PrintByOption(results, PrintedInfo.Mean);
-        PrintByOption(results, PrintedInfo.Std);
+        PrintByOption(results, PrintTarget.Mean);
+        PrintByOption(results, PrintTarget.Std);
 
         PrintHeader(headers, ["Algorithms", "Options"]);
-        PrintByAlgorithm(results, PrintedInfo.Mean);
-        PrintByAlgorithm(results, PrintedInfo.Std);
+        PrintByAlgorithm(results, PrintTarget.Mean);
+        PrintByAlgorithm(results, PrintTarget.Std);
 
-        PrintSuspiciousPairs(results);
+        PrintExceptionStats(results);
     }
+
+    // Preparion methods
 
     private static string[]? SelectFolder()
     {
@@ -153,6 +152,8 @@ public class Program
         new Options(false, Normalization.Type.MinMax),
         new Options(true, Normalization.Type.MinMax)
     ];
+
+    // Distance estimation methods
 
     private static TestResult Test(
         Options options,
@@ -241,6 +242,8 @@ public class Program
         return results.ToArray();
     }
 
+    // Output methods
+
     private static void PrintHeader(PairOfMixtures[] mixPairs, string[] titles)
     {
         Console.WriteLine();
@@ -258,7 +261,7 @@ public class Program
         Console.WriteLine();
     }
 
-    private static void PrintByAlgorithm(TestResult[] results, PrintedInfo target)
+    private static void PrintByAlgorithm(TestResult[] results, PrintTarget target)
     {
         var list = new Dictionary<Algorithm, List<string>>();
         foreach (var testResult in results)
@@ -272,7 +275,7 @@ public class Program
             string s = $"{testResult.Algorithm.Name,-COLSIZE_COND}";
             s += $"{testResult.Options,-COLSIZE_COND}";
 
-            if (target == PrintedInfo.Mean)
+            if (target == PrintTarget.Mean)
                 foreach (var comparison in testResult.Comparisons)
                     s += $"{comparison.Mean,-COLSIZE_DIST:F4}";
             else
@@ -288,7 +291,7 @@ public class Program
                 Console.WriteLine(line);
     }
 
-    private static void PrintByOption(TestResult[] results, PrintedInfo target)
+    private static void PrintByOption(TestResult[] results, PrintTarget target)
     {
         var list = new Dictionary<Options, List<string>>();
         foreach (var testResult in results)
@@ -302,7 +305,7 @@ public class Program
             string s = $"{testResult.Options,-COLSIZE_COND}";
             s += $"{testResult.Algorithm.Name,-COLSIZE_COND}";
 
-            if (target == PrintedInfo.Mean)
+            if (target == PrintTarget.Mean)
                 foreach (var comparison in testResult.Comparisons)
                     s += $"{comparison.Mean,-COLSIZE_DIST:F4}";
             else
@@ -318,9 +321,7 @@ public class Program
                 Console.WriteLine(line);
     }
 
-    record Condition(Algorithm Algorithm, Options Options);
-
-    private static void PrintSuspiciousPairs(TestResult[] results)
+    private static void PrintExceptionStats(TestResult[] results)
     {
         Console.WriteLine();
         Console.WriteLine("Exception analysis");
@@ -356,7 +357,7 @@ public class Program
                         }
 
             var oddPerc = 100.0 * count / totalCount;
-            var (threshold, successRate) = EstimateThreshold(sameMixtures, diffMixtures);
+            var (threshold, successRate) = EstimateThreshold(sameMixtures.ToArray(), diffMixtures.ToArray());
             string s = $"{testResult.Algorithm.Name,-COLSIZE_COND} {testResult.Options,-COLSIZE_COND} {oddPerc,-COLSIZE_DIST:F2} {minDistance,-COLSIZE_DIST:F4} {threshold,-COLSIZE_DIST:F4} {successRate,-COLSIZE_DIST:F4}";
             list.Add(s);
         }
@@ -365,7 +366,9 @@ public class Program
             Console.WriteLine(item);
     }
 
-    private static (double, double) EstimateThreshold(IEnumerable<ComparisonResult> sameMixtures, IEnumerable<ComparisonResult> diffMixtures)
+    /// <returns>threshold and average share of the values that stay within the threshold
+    /// ("same" - below the threshold, "diff" - above the threshold)</returns>
+    private static (double, double) EstimateThreshold(ComparisonResult[] sameMixtures, ComparisonResult[] diffMixtures)
     {
         var distOfSameMixtures = new List<double>();
         foreach (var sameMixResult in sameMixtures)
@@ -379,10 +382,10 @@ public class Program
         distOfDiffMixtures.Sort();
 
         double threshold = 0;
-        for (int i = 0, j = 0; i < distOfDiffMixtures.Count && j < distOfSameMixtures.Count; i++, j++)
-            if (distOfDiffMixtures[i] > distOfSameMixtures[j])
+        for (int i = 0; i < distOfDiffMixtures.Count && i < distOfSameMixtures.Count; i++)
+            if (distOfDiffMixtures[i] > distOfSameMixtures[i])
             {
-                threshold = (distOfDiffMixtures[i] + distOfSameMixtures[j]) / 2;
+                threshold = (distOfDiffMixtures[i] + distOfSameMixtures[i]) / 2;
                 break;
             }
 

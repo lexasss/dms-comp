@@ -1,10 +1,10 @@
 ﻿namespace DmsComparison.Algorithms;
 
-internal class Euclidian : Algorithm
+internal class Manhattan : Algorithm
 {
     // https://pypi.org/project/distance-metrics-mcda/
 
-    public override string Name => "Euclidian";
+    public override string Name => "Manhattan";
 
     protected override double ComputeDistance(ReadOnlySpan<float> data1, ReadOnlySpan<float> data2)
     {
@@ -17,7 +17,7 @@ internal class Euclidian : Algorithm
             {
                 if (data1[i] != 0 || data2[i] != 0)
                 {
-                    sum += Math.Pow(data1[i] - data2[i], 2);
+                    sum += Math.Abs(data1[i] - data2[i]);
                     count += 1;
                 }
             }
@@ -27,11 +27,9 @@ internal class Euclidian : Algorithm
             count = data1.Length;
             for (int i = 0; i < data1.Length; i++)
             {
-                sum += Math.Pow(data1[i] - data2[i], 2);
+                sum += Math.Abs(data1[i] - data2[i]);
             }
         }
-
-        // System.Diagnostics.Debug.WriteLine($"[DIST] Point count: {count}");
 
         return Math.Sqrt(sum / (count > 0 ? count : 1));
     }

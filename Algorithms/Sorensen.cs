@@ -1,15 +1,15 @@
 ﻿namespace DmsComparison.Algorithms;
 
-internal class Euclidian : Algorithm
+internal class Sorensen : Algorithm
 {
     // https://pypi.org/project/distance-metrics-mcda/
 
-    public override string Name => "Euclidian";
+    public override string Name => "Sorensen";
 
     protected override double ComputeDistance(ReadOnlySpan<float> data1, ReadOnlySpan<float> data2)
     {
-        double sum = 0;
-        int count = 0;
+        double numerator = 0;
+        double denominator = 0;
 
         if (_isDataRectified)
         {
@@ -17,22 +17,20 @@ internal class Euclidian : Algorithm
             {
                 if (data1[i] != 0 || data2[i] != 0)
                 {
-                    sum += Math.Pow(data1[i] - data2[i], 2);
-                    count += 1;
+                    numerator += Math.Abs(data1[i] - data2[i]);
+                    denominator = data1[i] + data2[i];
                 }
             }
         }
         else
         {
-            count = data1.Length;
             for (int i = 0; i < data1.Length; i++)
             {
-                sum += Math.Pow(data1[i] - data2[i], 2);
+                numerator += Math.Abs(data1[i] - data2[i]);
+                denominator += data1[i] + data2[i];
             }
         }
 
-        // System.Diagnostics.Debug.WriteLine($"[DIST] Point count: {count}");
-
-        return Math.Sqrt(sum / (count > 0 ? count : 1));
+        return numerator / (denominator > 0 ? denominator : 1);
     }
 }
