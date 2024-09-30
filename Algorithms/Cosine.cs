@@ -35,6 +35,6 @@ internal class Cosine : Algorithm
         }
 
         var denominator = Math.Sqrt(sum1) * Math.Sqrt(sum2);
-        return numerator / (denominator > 0 ? denominator : 1);
+        return 1.0 - numerator / (denominator > 0 ? denominator : 1);
     }
 }

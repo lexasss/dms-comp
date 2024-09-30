@@ -1,10 +1,10 @@
 ﻿namespace DmsComparison.Algorithms;
 
-internal class Hamming : Algorithm
+internal class KullbackLeibler : Algorithm
 {
-    // https://en.wikipedia.org/wiki/Hamming_distance
+    // https://datascience.stackexchange.com/questions/9262/calculating-kl-divergence-in-python
 
-    public override string Name => "Hamming";
+    public override string Name => "Kullback-Leibler";
 
     protected override double ComputeDistance(ReadOnlySpan<float> data1, ReadOnlySpan<float> data2)
     {
@@ -17,20 +17,20 @@ internal class Hamming : Algorithm
             {
                 if (data1[i] != 0 || data2[i] != 0)
                 {
-                    sum += data1[i] == data2[i] ? 1 : 0;
+                    sum += (data1[i] > 0 && data2[i] > 0) ? data1[i] * Math.Log(data1[i] / data2[i]) : 0;
                     count += 1;
                 }
             }
         }
         else
         {
-            count = data1.Length;
             for (int i = 0; i < data1.Length; i++)
             {
-                sum += data1[i] == data2[i] ? 1 : 0;
+                sum += (data1[i] > 0 && data2[i] > 0) ? data1[i] * Math.Log(data1[i] / data2[i]) : 0;
+                count += 1;
             }
         }
 
-        return 1.0 - sum / (count > 0 ? count : 1);
+        return sum / (count > 0 ? count : 1);
     }
 }

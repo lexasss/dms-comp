@@ -2,7 +2,7 @@
 
 internal class Canberra : Algorithm
 {
-    // https://pypi.org/project/distance-metrics-mcda/
+    // https://github.com/scipy/scipy/blob/v1.14.1/scipy/spatial/distance.py
 
     public override string Name => "Canberra";
 
@@ -18,7 +18,8 @@ internal class Canberra : Algorithm
                 if (data1[i] != 0 || data2[i] != 0)
                 {
                     var numerator = Math.Abs(data1[i] - data2[i]);
-                    var denominator = data1[i] + data2[i];
+                    //var denominator = data1[i] + data2[i];    // https://pypi.org/project/distance-metrics-mcda/
+                    var denominator = Math.Abs(data1[i]) + Math.Abs(data2[i]);      // scipy
                     sum += numerator / (denominator != 0 ? denominator : 1);
                     count += 1;
                 }
@@ -30,7 +31,8 @@ internal class Canberra : Algorithm
             for (int i = 0; i < data1.Length; i++)
             {
                 var numerator = Math.Abs(data1[i] - data2[i]);
-                var denominator = data1[i] + data2[i];
+                //var denominator = data1[i] + data2[i];    // https://pypi.org/project/distance-metrics-mcda/
+                var denominator = Math.Abs(data1[i]) + Math.Abs(data2[i]);      // scipy
                 sum += numerator / (denominator != 0 ? denominator : 1);
             }
         }

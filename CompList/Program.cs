@@ -37,8 +37,8 @@ public class Program
     const bool VERBOSE = false;
     const bool DEBUG = false;
 
-    const int COLSIZE_COND = 14;
-    const int COLSIZE_DIST = 8;
+    const int COLSIZE_COND = 20;
+    const int COLSIZE_DIST = 9;
 
     public static void Main()
     {
@@ -68,9 +68,11 @@ public class Program
 
         var headers = results.First().Comparisons.Select(c => c.Mixtures).ToArray();
 
+        /*
         PrintHeader(headers, ["Options", "Algorithm"]);
         PrintByOption(results, PrintTarget.Mean);
         PrintByOption(results, PrintTarget.Std);
+        */
 
         PrintHeader(headers, ["Algorithms", "Options"]);
         PrintByAlgorithm(results, PrintTarget.Mean);
@@ -203,7 +205,7 @@ public class Program
                         distances.Add(dist);
 
                         if (VERBOSE)
-                            Console.WriteLine($"    {dms1.Time} / {dms2.Time}   =>   {dist:F4}");
+                            Console.WriteLine($"    {dms1.Time} / {dms2.Time}   =>   {dist:F5}");
                     }
                 }
 
@@ -277,10 +279,10 @@ public class Program
 
             if (target == PrintTarget.Mean)
                 foreach (var comparison in testResult.Comparisons)
-                    s += $"{comparison.Mean,-COLSIZE_DIST:F4}";
+                    s += $"{comparison.Mean,-COLSIZE_DIST:F5}";
             else
                 foreach (var comparison in testResult.Comparisons)
-                    s += $"{comparison.Std,-COLSIZE_DIST:F4}";
+                    s += $"{comparison.Std,-COLSIZE_DIST:F5}";
 
             items.Add(s);
         }
@@ -307,10 +309,10 @@ public class Program
 
             if (target == PrintTarget.Mean)
                 foreach (var comparison in testResult.Comparisons)
-                    s += $"{comparison.Mean,-COLSIZE_DIST:F4}";
+                    s += $"{comparison.Mean,-COLSIZE_DIST:F5}";
             else
                 foreach (var comparison in testResult.Comparisons)
-                    s += $"{comparison.Std,-COLSIZE_DIST:F4}";
+                    s += $"{comparison.Std,-COLSIZE_DIST:F5}";
 
             items.Add(s);
         }
@@ -358,7 +360,7 @@ public class Program
 
             var oddPerc = 100.0 * count / totalCount;
             var (threshold, successRate) = EstimateThreshold(sameMixtures.ToArray(), diffMixtures.ToArray());
-            string s = $"{testResult.Algorithm.Name,-COLSIZE_COND} {testResult.Options,-COLSIZE_COND} {oddPerc,-COLSIZE_DIST:F2} {minDistance,-COLSIZE_DIST:F4} {threshold,-COLSIZE_DIST:F4} {successRate,-COLSIZE_DIST:F4}";
+            string s = $"{testResult.Algorithm.Name,-COLSIZE_COND} {testResult.Options,-COLSIZE_COND} {oddPerc,-COLSIZE_DIST:F2} {minDistance,-COLSIZE_DIST:F5} {threshold,-COLSIZE_DIST:F5} {successRate,-COLSIZE_DIST:F5}";
             list.Add(s);
         }
 
