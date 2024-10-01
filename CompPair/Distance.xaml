@@ -69,9 +69,13 @@
 
         <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3">
             <Separator/>
-            <Label x:Name="lblDistance"
-                   HorizontalAlignment="Center"
-                   FontWeight="Bold"/>
+            <TextBox x:Name="txbDistance"
+                     HorizontalAlignment="Center"
+                     IsReadOnly="True"
+                     FontWeight="Bold"
+                     FontSize="16"
+                     Background="{x:Null}"
+                     BorderBrush="{x:Null}"/>
         </StackPanel>
     </Grid>
 </UserControl>

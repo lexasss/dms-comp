@@ -31,6 +31,6 @@ internal class Jaccard : Algorithm
             }
         }
 
-        return 100 * numerator / (denominator != 0 ? denominator : 1);
+        return 10 * numerator / (denominator != 0 ? denominator : 1);
     }
 }

@@ -34,8 +34,8 @@ enum PrintTarget
 
 public class Program
 {
-    const bool VERBOSE = false;
-    const bool DEBUG = false;
+    static bool VERBOSE => false;
+    static bool DEBUG => false;
 
     const int COLSIZE_COND = 20;
     const int COLSIZE_DIST = 9;
@@ -88,9 +88,10 @@ public class Program
         var ofd = new OpenFolder.FolderPicker
         {
             OkButtonLabel = "Load",
+            ForceFileSystem = false,
             Title = "Select a folder with DMS data"
         };
-        if (ofd.ShowDialog() == false)
+        if (ofd.ShowDialog() == false || string.IsNullOrEmpty(ofd.ResultPath))
         {
             return null;
         }
@@ -137,7 +138,7 @@ public class Program
         {
             if (Activator.CreateInstance(algorithmType) is Algorithm algorithm)
             {
-                if (DEBUG && algorithm.Name == "DTW")
+                if (!algorithm.IsVisible || (DEBUG && algorithm.Name == "DTW"))
                     continue;
                 result.Add(algorithm);
             }
@@ -331,7 +332,13 @@ public class Program
         Array.Sort(results, (a, b) =>
         {
             int result = a.Algorithm.Name.CompareTo(b.Algorithm.Name);
-            return result != 0 ? result : a.Options.ToString().CompareTo(b.Options.ToString());
+            if (result != 0)
+                return result;
+            result = a.Options.NormalizationType.CompareTo(b.Options.NormalizationType);
+            if (result != 0)
+                return result;
+            result = a.Options.UseRectification.CompareTo(b.Options.UseRectification);
+            return result;
         });
         
         var list = new List<string>();

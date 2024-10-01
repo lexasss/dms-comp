@@ -6,6 +6,8 @@ internal class JensenShannon : Algorithm
 
     public override string Name => "Jensen-Shannon";
 
+    public override bool IsVisible => false;
+
     protected override double ComputeDistance(ReadOnlySpan<float> data1, ReadOnlySpan<float> data2)
     {
         double sum = 0;

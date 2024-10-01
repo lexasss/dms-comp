@@ -36,14 +36,6 @@
                 BorderThickness="0,3">
             <Canvas x:Name="cnvDmsDiff"/>
         </Border>
-        <Border Grid.Row="1"
-                Padding="4"
-                HorizontalAlignment="Right"
-                Background="#E0E0E0"
-                BorderBrush="#FF8A8A8A"
-                BorderThickness="3">
-            <local:Distance x:Name="dstDistance"/>
-        </Border>
 
         <Label Grid.Row="2"
                Content="Click to select a DMS measurement file"
@@ -57,5 +49,15 @@
                Visibility="{Binding IsDms2Ready, Converter={StaticResource bool2vis}}"
                HorizontalAlignment="Center"
                VerticalAlignment="Bottom"/>
+
+        <Border Grid.Row="0" Grid.RowSpan="3"
+                Padding="4"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Background="#E0E0E0"
+                BorderBrush="#FF8A8A8A"
+                BorderThickness="3">
+            <local:Distance x:Name="dstDistance"/>
+        </Border>
     </Grid>
 </Window>

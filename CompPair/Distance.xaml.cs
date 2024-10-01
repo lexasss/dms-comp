@@ -60,7 +60,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
         foreach (var algorithmType in algorithmTypes)
         {
             var algorithm = Activator.CreateInstance(algorithmType) as Algorithm;
-            if (algorithm == null)
+            if (algorithm == null || !algorithm.IsVisible)
             {
                 continue;
             }
@@ -119,7 +119,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
 
     private void Update()
     {
-        lblDistance.Content = null;
+        txbDistance.Text = "";
 
         if (_data1 == null || _data2 == null || _algorithm == null)
         {
@@ -128,6 +128,6 @@ public partial class Distance : UserControl, INotifyPropertyChanged
 
         double result = _algorithm.ComputeDistance(_data1, _data2, _shouldRectify, _normalizationType);
 
-        lblDistance.Content = $"{result:F3}";
+        txbDistance.Text = $"{result:F3}";
     }
 }

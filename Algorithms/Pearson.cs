@@ -81,6 +81,6 @@ internal class Pearson : Algorithm
         }
 
         var denominator = Math.Sqrt(den1) * Math.Sqrt(den2);
-        return 1.0 - numerator / (denominator > 0 ? denominator : 1);
+        return 10 * (1.0 - numerator / (denominator > 0 ? denominator : 1));
     }
 }
