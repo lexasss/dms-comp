@@ -7,20 +7,10 @@ using DmsComparison.Algorithms;
 // and the value is a set of measurements of this mixture type
 using MixtureDatasets = KeyValuePair<string, HashSet<DmsComparison.Dms>>;
 
-class Options(bool useRectification, Normalization.Type normalizationType)
-{
-    public bool UseRectification => useRectification;
-    public Normalization.Type NormalizationType => normalizationType;
-    public override string ToString()
-    {
-        string rect = UseRectification ? "R" : "-";
-        return $"{rect},{NormalizationType}";
-    }
-}
 class PairOfMixtures(string mix1, string mix2)
 {
     public string Id => $"{mix1}/{mix2}";
-    public bool IsSame => mix1 == mix2;
+    public bool AreSame => mix1 == mix2;
     public override string ToString() => Id;
 }
 record ComparisonResult(PairOfMixtures Mixtures, double Mean, double Std, double[] Distances);
@@ -147,14 +137,16 @@ public class Program
         return result.ToArray();
     }
 
-    private static Options[] PermutateOptions() => [
-        new Options(false, Normalization.Type.None),
-        new Options(true, Normalization.Type.None),
-        new Options(false, Normalization.Type.Linear),
-        new Options(true, Normalization.Type.Linear),
-        new Options(false, Normalization.Type.MinMax),
-        new Options(true, Normalization.Type.MinMax)
-    ];
+    private static Options[] PermutateOptions()
+    {
+        var booleans = new bool[] { false, true };
+        var result = new List<Options>();
+        foreach (var crop in booleans)
+            foreach (var norm in Enum.GetValues<Normalization.Type>())
+                foreach (var rect in booleans)
+                    result.Add(new Options(rect, norm, crop));
+        return result.ToArray();
+    }
 
     // Distance estimation methods
 
@@ -194,14 +186,11 @@ public class Program
                     {
                         var dms1 = dmsSet1[i];
                         var dms2 = dmsSet2[j];
-                        if (dms1 == dms2)
+                        if (dms1 == dms2 || dms1.Width != dms2.Width || dms1.Height != dms2.Height)
                             continue;
 
                         distanceCount += 1;
-                        var dist = algorithm.ComputeDistance(
-                            dms1.Data, dms2.Data,
-                            options.UseRectification,
-                            options.NormalizationType);
+                        var dist = algorithm.ComputeDistance(dms1.Data, dms2.Data, new Size(dms1.Width, dms2.Height), options);
                         distanceSum += dist;
                         distances.Add(dist);
 
@@ -230,11 +219,7 @@ public class Program
 
         foreach (var options in optionsSet)
         {
-            Console.WriteLine();
-            Console.WriteLine("Conditions");
-            Console.WriteLine($"  Rectification: {options.UseRectification}");
-            Console.WriteLine($"  Normalization: {options.NormalizationType}");
-
+            Console.WriteLine($"\nOptions: {options}");
             foreach (var algorithm in algorithms)
             {
                 var testResult = Test(options, algorithm, mixDataset);
@@ -334,6 +319,9 @@ public class Program
             int result = a.Algorithm.Name.CompareTo(b.Algorithm.Name);
             if (result != 0)
                 return result;
+            result = a.Options.Crop.CompareTo(b.Options.Crop);
+            if (result != 0)
+                return result;
             result = a.Options.NormalizationType.CompareTo(b.Options.NormalizationType);
             if (result != 0)
                 return result;
@@ -345,8 +333,8 @@ public class Program
 
         foreach (var testResult in results)
         {
-            var sameMixtures = testResult.Comparisons.Where(cmps => cmps.Mixtures.IsSame);
-            var diffMixtures = testResult.Comparisons.Where(cmps => !cmps.Mixtures.IsSame);
+            var sameMixtures = testResult.Comparisons.Where(cmps => cmps.Mixtures.AreSame);
+            var diffMixtures = testResult.Comparisons.Where(cmps => !cmps.Mixtures.AreSame);
 
             int totalCount = 0;
             int count = 0;
