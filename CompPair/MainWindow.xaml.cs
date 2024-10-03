@@ -1,5 +1,6 @@
 ﻿using DmsComparison;
 using System.ComponentModel;
+using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -23,6 +24,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     Dms? _dms1 = null;
     Dms? _dms2 = null;
+
+    CancellationTokenSource _cts = new CancellationTokenSource();
+    DateTime _timerStarted = DateTime.UtcNow.AddYears(-1);
+
 
     private static void LoadDmsFile(Action<Dms?> proceed)
     {
@@ -68,7 +73,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void DisplayDms(Canvas canvas, Dms dms)
     {
-        Painter.DrawPlot(canvas, null, dms.Height, dms.Width, dms.Data);
+        var scale = chkAbsoluteScale.IsChecked ?? false ? (float)sldAbsoluteScale.Value : 0;
+        Painter.DrawPlot(canvas, null, dms.Height, dms.Width, dms.Data, scale);
 
         if (_dms1 != null && _dms2 != null)
         {
@@ -92,6 +98,40 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
+    public void UpdatePlotOnThresholdChange()
+    {
+        Dispatcher.Invoke(() =>
+        {
+            var scale = chkAbsoluteScale.IsChecked ?? false ? (float)sldAbsoluteScale.Value : 0;
+            if (_dms1 != null)
+                Painter.DrawPlot(cnvDms1, null, _dms1.Height, _dms1.Width, _dms1.Data, scale);
+            if (_dms2 != null)
+                Painter.DrawPlot(cnvDms2, null, _dms2.Height, _dms2.Width, _dms2.Data, scale);
+        });
+    }
+
+    public void Throttle(int interval, Action action)
+    {
+        _cts.Cancel();
+        _cts = new CancellationTokenSource();
+
+        var curTime = DateTime.UtcNow;
+        if (curTime.Subtract(_timerStarted).TotalMilliseconds < interval)
+            interval -= (int)curTime.Subtract(_timerStarted).TotalMilliseconds;
+
+        Task.Run(async delegate
+        {
+            try
+            {
+                await Task.Delay(interval, _cts.Token);
+                action();
+            }
+            catch { }
+        });
+
+        _timerStarted = curTime;
+    }
+
     // UI events
 
     private void Dms1Prompt_MouseDown(object sender, MouseButtonEventArgs e)
@@ -112,5 +152,15 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDms2Ready)));
             UpdateDmsUI(_dms2, cnvDms2, lblDms2);
         });
+    }
+
+    private void AbsoluteScale_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        Throttle(1000, UpdatePlotOnThresholdChange);
+    }
+
+    private void AbsoluteScale_CheckChanged(object sender, RoutedEventArgs e)
+    {
+        UpdatePlotOnThresholdChange();
     }
 }

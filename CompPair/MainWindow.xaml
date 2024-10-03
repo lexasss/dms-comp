@@ -50,14 +50,48 @@
                HorizontalAlignment="Center"
                VerticalAlignment="Bottom"/>
 
-        <Border Grid.Row="0" Grid.RowSpan="3"
-                Padding="4"
+        <StackPanel Grid.Row="0" Grid.RowSpan="3"
                 HorizontalAlignment="Right"
-                VerticalAlignment="Center"
-                Background="#E0E0E0"
-                BorderBrush="#FF8A8A8A"
-                BorderThickness="3">
-            <local:Distance x:Name="dstDistance"/>
-        </Border>
+                VerticalAlignment="Center">
+            <Border Padding="4"
+                    Background="#E0E0E0"
+                    BorderBrush="#FF8A8A8A"
+                    BorderThickness="3">
+                <local:Distance x:Name="dstDistance"/>
+            </Border>
+            <Border Padding="4"
+                    Background="#E0E0E0"
+                    BorderBrush="#FF8A8A8A"
+                    BorderThickness="3">
+                <StackPanel>
+                    <Label Content="Visualization"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"/>
+                    <CheckBox x:Name="chkAbsoluteScale"
+                              Content="Absolute scale"
+                              Checked="AbsoluteScale_CheckChanged"
+                              Unchecked="AbsoluteScale_CheckChanged"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Slider x:Name="sldAbsoluteScale" Grid.Column="0"
+                                Margin="0,8,0,6"
+                                Minimum="100"
+                                Maximum="1000"
+                                LargeChange="100"
+                                SmallChange="10"
+                                Value="300"
+                                IsEnabled="{Binding IsChecked, ElementName=chkAbsoluteScale}"
+                                AutoToolTipPlacement="TopLeft" ValueChanged="AbsoluteScale_ValueChanged"/>
+                        <!--Label Grid.Column="1"
+                               VerticalAlignment="Center"
+                               Content="{Binding Value, ElementName=sldAbsoluteScale}"/-->
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </StackPanel>
     </Grid>
 </Window>

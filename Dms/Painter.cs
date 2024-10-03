@@ -20,10 +20,10 @@ public static class Painter
         Draw(canvas, theme, rows, cols, values, range, origin);
     }
 
-    public static void DrawPlot(Canvas canvas, PlotColorTheme? theme, int rows, int cols, float[] values)
+    public static void DrawPlot(Canvas canvas, PlotColorTheme? theme, int rows, int cols, float[] values, float saturationPoint = 0)
     {
         var minValue = values.Min();
-        var maxValue = values.Max();
+        var maxValue = saturationPoint > 0 ? saturationPoint : values.Max();
 
         float range = maxValue - minValue;
         float origin = minValue;
