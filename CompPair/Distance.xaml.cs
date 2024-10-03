@@ -39,10 +39,14 @@ public partial class Distance : UserControl, INotifyPropertyChanged
 
     public void Update(Dms dms1, Dms dms2)
     {
-        _data1 = dms1.Data;
-        _data2 = dms2.Data;
+        if (dms1.Width == dms2.Width && dms1.Height == dms2.Height)
+        {
+            _data1 = dms1.Data;
+            _data2 = dms2.Data;
+            _size = new Size(dms1.Width, dms1.Height);
 
-        Update();
+            Update();
+        }
     }
 
     // Internal
@@ -53,6 +57,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
 
     float[]? _data1 = null;
     float[]? _data2 = null;
+    Size? _size = null;
 
     private void CreateUiListOfAlgorithms()
     {
@@ -121,13 +126,13 @@ public partial class Distance : UserControl, INotifyPropertyChanged
     {
         txbDistance.Text = "";
 
-        if (_data1 == null || _data2 == null || _algorithm == null)
+        if (_data1 == null || _data2 == null || _size == null || _algorithm == null)
         {
             return;
         }
 
-        double result = _algorithm.ComputeDistance(_data1, _data2, _shouldRectify, _normalizationType);
+        double result = _algorithm.ComputeDistance(_data1, _data2, _size, new Options(_shouldRectify, _normalizationType, false));
 
-        txbDistance.Text = $"{result:F3}";
+        txbDistance.Text = $"{result:F4}";
     }
 }

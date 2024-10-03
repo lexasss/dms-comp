@@ -24,7 +24,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     Dms? _dms1 = null;
     Dms? _dms2 = null;
 
-    private void LoadDmsFile(Action<Dms?> proceed)
+    private static void LoadDmsFile(Action<Dms?> proceed)
     {
         string? filename = SelectDmsFile();
         if (!string.IsNullOrEmpty(filename))
@@ -34,7 +34,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
-    private string? SelectDmsFile()
+    private static string? SelectDmsFile()
     {
         var ofd = new Microsoft.Win32.OpenFileDialog();
         ofd.Filter = "JSON files|*.json";
@@ -53,7 +53,17 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             DisplayDms(canvas, dms);
         }
 
-        info.Content = dms == null ? null : $"{dms.Filename} | {dms.Info}";
+        List<string> parts = [];
+        if (dms != null)
+        {
+            parts.Add(dms.Filename);
+            if (dms.Info != null)
+            {
+                parts.Add(dms.Info);
+            }
+        }
+
+        info.Content = string.Join(" | ", parts);
     }
 
     private void DisplayDms(Canvas canvas, Dms dms)

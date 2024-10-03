@@ -20,9 +20,9 @@ public class Dms
 
         Filename = filename;
 
-        var dateTime = filename[5..^1].Split(" ");
-        Date = dateTime[0];
-        Time = dateTime[1];
+        var dateTime = DateTime.Parse(scan.FinishTime);
+        Date = dateTime.ToString("yyyy-MM-dd");
+        Time = dateTime.ToString("HH-mm-ss");
 
         var usv = scan.MeasurementData.Usv;
         var firstUsv = usv[0];
