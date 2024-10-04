@@ -9,16 +9,20 @@ public class Dms
     public int Width { get; init; }
     public int Height { get; init; }
     public string? Info { get; init; }
+    public string FullPath { get; init; }
+    public string Folder { get; init; }
     public string Filename { get; init; }
     public string Date { get; init; }
     public string Time { get; init; }
     public float[] Data => _scan.MeasurementData.IntensityTop;
 
-    public Dms(IonVision.Scan scan, string filename)
+    public Dms(IonVision.Scan scan, string fullpath)
     {
         _scan = scan;
 
-        Filename = filename;
+        FullPath = fullpath;
+        Filename = Path.GetFileNameWithoutExtension(fullpath);
+        Folder = fullpath.Split(Path.DirectorySeparatorChar)[^2];
 
         var dateTime = DateTime.Parse(scan.FinishTime);
         Date = dateTime.ToString("yyyy-MM-dd");
@@ -47,7 +51,7 @@ public class Dms
             var dms = JsonSerializer.Deserialize<IonVision.Scan>(json);
             if (dms != null)
             {
-                return new Dms(dms, Path.GetFileNameWithoutExtension(filename));
+                return new Dms(dms, filename);
             }
             else throw new Exception("Cannot read DMS data");
         }

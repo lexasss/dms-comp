@@ -68,9 +68,9 @@ public static class Painter
 
     static Dictionary<double, Color> _diffThemeDefinition = new() {
         { -1, Colors.Blue },
-        { -0.3, Colors.Black },
+        //{ -0.3, Colors.Black },
         { 0, Colors.White },
-        { 0.3, Colors.Black },
+        //{ 0.3, Colors.Black },
         { 1, Colors.Red },
         /*{ 0, Colors.White },
         { 0.03, Color.FromRgb(128, 128, 128) },

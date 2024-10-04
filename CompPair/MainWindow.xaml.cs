@@ -1,6 +1,5 @@
 ﻿using DmsComparison;
 using System.ComponentModel;
-using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -18,6 +17,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         InitializeComponent();
         DataContext = this;
+
+        var settings = Properties.Settings.Default;
+        chkAbsoluteScale.IsChecked = settings.Vis_UseAbsoluteScale;
+        sldAbsoluteScale.Value = settings.Vis_AbsoluteScale;
+
+        _isInitialized = true;
     }
 
     // Internal
@@ -28,6 +33,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     CancellationTokenSource _cts = new CancellationTokenSource();
     DateTime _timerStarted = DateTime.UtcNow.AddYears(-1);
 
+    bool _isInitialized = false;
 
     private static void LoadDmsFile(Action<Dms?> proceed)
     {
@@ -61,6 +67,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         List<string> parts = [];
         if (dms != null)
         {
+            parts.Add(dms.Folder);
             parts.Add(dms.Filename);
             if (dms.Info != null)
             {
@@ -107,6 +114,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 Painter.DrawPlot(cnvDms1, null, _dms1.Height, _dms1.Width, _dms1.Data, scale);
             if (_dms2 != null)
                 Painter.DrawPlot(cnvDms2, null, _dms2.Height, _dms2.Width, _dms2.Data, scale);
+
+            var settings = Properties.Settings.Default;
+            settings.Vis_UseAbsoluteScale = chkAbsoluteScale.IsChecked ?? false;
+            settings.Vis_AbsoluteScale = sldAbsoluteScale.Value;
+            settings.Save();
         });
     }
 
@@ -156,11 +168,13 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void AbsoluteScale_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
-        Throttle(1000, UpdatePlotOnThresholdChange);
+        if (_isInitialized)
+            Throttle(1000, UpdatePlotOnThresholdChange);
     }
 
     private void AbsoluteScale_CheckChanged(object sender, RoutedEventArgs e)
     {
-        UpdatePlotOnThresholdChange();
+        if (_isInitialized)
+            UpdatePlotOnThresholdChange();
     }
 }

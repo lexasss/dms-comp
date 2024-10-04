@@ -25,8 +25,14 @@ public partial class Distance : UserControl, INotifyPropertyChanged
         InitializeComponent();
         DataContext = this;
 
-        CreateUiListOfAlgorithms();
+        var settings = Properties.Settings.Default;
+        _normalizationType = (Normalization.Type)settings.DataProc_Normalization;
+        _shouldRectify = settings.DataProc_Rectification;
+
+        CreateUiListOfAlgorithms(settings.Alg_Name);
         CreateUiListOfNormalizations();
+
+        chkRectify.IsChecked = _shouldRectify;
     }
 
     public void Clear()
@@ -52,25 +58,24 @@ public partial class Distance : UserControl, INotifyPropertyChanged
     // Internal
 
     Algorithm? _algorithm = null;
-    bool _shouldRectify = false;
-    Normalization.Type _normalizationType = Normalization.Type.None;
+    bool _shouldRectify;
+    Normalization.Type _normalizationType;
 
     float[]? _data1 = null;
     float[]? _data2 = null;
     Size? _size = null;
 
-    private void CreateUiListOfAlgorithms()
+    private void CreateUiListOfAlgorithms(string selectedAlgorithm)
     {
         var algorithmTypes = Algorithm.GetDescendantTypes();
         foreach (var algorithmType in algorithmTypes)
         {
-            var algorithm = Activator.CreateInstance(algorithmType) as Algorithm;
-            if (algorithm == null || !algorithm.IsVisible)
+            if (Activator.CreateInstance(algorithmType) is not Algorithm algorithm || !algorithm.IsVisible)
             {
                 continue;
             }
 
-            if (_algorithm == null)
+            if (algorithm.Name == selectedAlgorithm)
             {
                 _algorithm = algorithm;
             }
@@ -93,6 +98,11 @@ public partial class Distance : UserControl, INotifyPropertyChanged
             };
 
             stpAlgorithms.Children.Add(rdb);
+        }
+
+        if (_algorithm == null)
+        {
+            _algorithm = (Algorithm?)(stpAlgorithms.Children[0] as RadioButton)?.Tag;
         }
     }
 
@@ -124,6 +134,12 @@ public partial class Distance : UserControl, INotifyPropertyChanged
 
     private void Update()
     {
+        var settings = Properties.Settings.Default;
+        settings.Alg_Name = _algorithm?.Name ?? "";
+        settings.DataProc_Normalization = (int)_normalizationType;
+        settings.DataProc_Rectification = _shouldRectify;
+        settings.Save();
+
         txbDistance.Text = "";
 
         if (_data1 == null || _data2 == null || _size == null || _algorithm == null)
