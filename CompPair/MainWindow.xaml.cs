@@ -35,14 +35,35 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     bool _isInitialized = false;
 
-    private static void LoadDmsFile(Action<Dms?> proceed)
+    private static bool LoadDmsFile(Action<Dms?> proceed)
     {
         string? filename = SelectDmsFile();
         if (!string.IsNullOrEmpty(filename))
         {
             var dms = Dms.Load(filename);
             proceed(dms);
+
+            return dms != null;
         }
+
+        return false;
+    }
+
+    private static bool LoadTwoDmsFiles(Action<Dms?> proceed1, Action<Dms?> proceed2)
+    {
+        (string? filename1, string? filename2) = SelectTwoDmsFiles();
+        if (!string.IsNullOrEmpty(filename1) && !string.IsNullOrEmpty(filename2))
+        {
+            var dms1 = Dms.Load(filename1);
+            proceed1(dms1);
+
+            var dms2 = Dms.Load(filename2);
+            proceed2(dms2);
+
+            return dms1 != null && dms2 != null;
+        }
+
+        return false;
     }
 
     private static string? SelectDmsFile()
@@ -55,6 +76,27 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
 
         return null;
+    }
+
+    private static (string?, string?) SelectTwoDmsFiles()
+    {
+        var ofd = new Microsoft.Win32.OpenFileDialog();
+        ofd.Filter = "JSON files|*.json";
+        ofd.Multiselect = true;
+        ofd.Title = "Select two DMS files";
+        if (ofd.ShowDialog() == true)
+        {
+            if (ofd.FileNames.Length == 2)
+            {
+                return (ofd.FileNames[0], ofd.FileNames[1]);
+            }
+            else
+            {
+                MessageBox.Show("Please select exactly two DMS files.", "DMS comparison", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        return (null, null);
     }
 
     private void UpdateDmsUI(Dms? dms, Canvas canvas, Label info)
@@ -164,6 +206,22 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDms2Ready)));
             UpdateDmsUI(_dms2, cnvDms2, lblDms2);
         });
+    }
+
+    private void DiffPrompt_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        LoadTwoDmsFiles(
+            dms => {
+                _dms1 = dms;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDms1Ready)));
+                UpdateDmsUI(_dms1, cnvDms1, lblDms1);
+            },
+            dms => {
+                _dms2 = dms;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDms2Ready)));
+                UpdateDmsUI(_dms2, cnvDms2, lblDms2);
+            }
+        );
     }
 
     private void AbsoluteScale_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)

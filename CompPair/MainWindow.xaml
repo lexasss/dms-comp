@@ -31,10 +31,16 @@
                HorizontalAlignment="Center"
                VerticalAlignment="Bottom"/>
 
+        <Label Grid.Row="1"
+               Content="Click to select two DMS measurement files"
+               HorizontalContentAlignment="Center"
+               VerticalContentAlignment="Center"
+               MouseDown="DiffPrompt_MouseDown"/>
         <Border Grid.Row="1"
                 BorderBrush="#FF8A8A8A"
                 BorderThickness="0,3">
-            <Canvas x:Name="cnvDmsDiff"/>
+            <Canvas x:Name="cnvDmsDiff"
+                    MouseDown="DiffPrompt_MouseDown"/>
         </Border>
 
         <Label Grid.Row="2"
