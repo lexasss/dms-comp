@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace CompPair;
 
@@ -17,6 +18,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         InitializeComponent();
         DataContext = this;
+
+        RenderOptions.SetBitmapScalingMode(imgDms1, BitmapScalingMode.NearestNeighbor);
+        RenderOptions.SetEdgeMode(imgDms1, EdgeMode.Aliased);
 
         var settings = Properties.Settings.Default;
         chkAbsoluteScale.IsChecked = settings.Vis_UseAbsoluteScale;
@@ -99,11 +103,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         return (null, null);
     }
 
-    private void UpdateDmsUI(Dms? dms, Canvas canvas, Label info)
+    private void UpdateDmsUI(Dms? dms, Image image, Label info)
     {
         if (dms != null)
         {
-            DisplayDms(canvas, dms);
+            DisplayDms(image, dms);
         }
 
         List<string> parts = [];
@@ -120,28 +124,29 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         info.Content = string.Join(" | ", parts);
     }
 
-    private void DisplayDms(Canvas canvas, Dms dms)
+    private void DisplayDms(Image image, Dms dms)
     {
         var scale = chkAbsoluteScale.IsChecked ?? false ? (float)sldAbsoluteScale.Value : 0;
-        Painter.DrawPlot(canvas, dms.Height, dms.Width, dms.Data, scale);
+        Painter.DrawPlot(image, dms.Height, dms.Width, dms.Data, scale);
 
         if (_dms1 != null && _dms2 != null)
         {
-            DisplayDmsDiff(cnvDmsDiff, _dms1, _dms2);
+            DisplayDmsDiff(imgDmsDiff, _dms1, _dms2);
         }
     }
 
-    private void DisplayDmsDiff(Canvas canvas, Dms dms1, Dms dms2)
+    private void DisplayDmsDiff(Image image, Dms dms1, Dms dms2)
     {
         if (dms1.Height == dms2.Height && dms1.Width == dms2.Width)
         {
-            Painter.DrawDiff(canvas, dms1.Height, dms1.Width, dms1.Data, dms2.Data);
+            Painter.DrawDiff(image, dms1.Height, dms1.Width, dms1.Data, dms2.Data);
             dstDistance.Update(dms1, dms2);
         }
         else
         {
             dstDistance.Clear();
-            canvas.Children.Clear();
+            //canvas.Children.Clear();
+            image.Source = null;
             MessageBox.Show("DMS data have distinct number of rows or colunms and therefore their difference cannot be displayed.",
                 "DMS loader", MessageBoxButton.OK, MessageBoxImage.Error);
         }
@@ -153,9 +158,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             var scale = chkAbsoluteScale.IsChecked ?? false ? (float)sldAbsoluteScale.Value : 0;
             if (_dms1 != null)
-                Painter.DrawPlot(cnvDms1, _dms1.Height, _dms1.Width, _dms1.Data, scale);
+                Painter.DrawPlot(imgDms1, _dms1.Height, _dms1.Width, _dms1.Data, scale);
             if (_dms2 != null)
-                Painter.DrawPlot(cnvDms2, _dms2.Height, _dms2.Width, _dms2.Data, scale);
+                Painter.DrawPlot(imgDms2, _dms2.Height, _dms2.Width, _dms2.Data, scale);
 
             var settings = Properties.Settings.Default;
             settings.Vis_UseAbsoluteScale = chkAbsoluteScale.IsChecked ?? false;
@@ -194,7 +199,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             _dms1 = dms;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDms1Ready)));
-            UpdateDmsUI(_dms1, cnvDms1, lblDms1);
+            UpdateDmsUI(_dms1, imgDms1, lblDms1);
         });
     }
 
@@ -204,7 +209,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             _dms2 = dms;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDms2Ready)));
-            UpdateDmsUI(_dms2, cnvDms2, lblDms2);
+            UpdateDmsUI(_dms2, imgDms2, lblDms2);
         });
     }
 
@@ -214,12 +219,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             dms => {
                 _dms1 = dms;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDms1Ready)));
-                UpdateDmsUI(_dms1, cnvDms1, lblDms1);
+                UpdateDmsUI(_dms1, imgDms1, lblDms1);
             },
             dms => {
                 _dms2 = dms;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDms2Ready)));
-                UpdateDmsUI(_dms2, cnvDms2, lblDms2);
+                UpdateDmsUI(_dms2, imgDms2, lblDms2);
             }
         );
     }

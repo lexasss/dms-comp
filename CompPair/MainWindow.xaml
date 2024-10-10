@@ -23,9 +23,13 @@
                HorizontalContentAlignment="Center"
                VerticalContentAlignment="Center"
                MouseDown="Dms1Prompt_MouseDown"/>
-        <Canvas x:Name="cnvDms1" Grid.Row="0"
+        <!--Canvas x:Name="cnvDms1" Grid.Row="0"
                 Visibility="{Binding IsDms1Ready, Converter={StaticResource bool2vis}}"
-                MouseDown="Dms1Prompt_MouseDown"/>
+                MouseDown="Dms1Prompt_MouseDown"/-->
+        <Image x:Name="imgDms1" Grid.Row="0"
+               Stretch="Fill"
+               Visibility="{Binding IsDms1Ready, Converter={StaticResource bool2vis}}"
+               MouseDown="Dms1Prompt_MouseDown"/>
         <Label x:Name="lblDms1" Grid.Row="0"
                Visibility="{Binding IsDms1Ready, Converter={StaticResource bool2vis}}"
                HorizontalAlignment="Center"
@@ -39,8 +43,11 @@
         <Border Grid.Row="1"
                 BorderBrush="#FF8A8A8A"
                 BorderThickness="0,3">
-            <Canvas x:Name="cnvDmsDiff"
-                    MouseDown="DiffPrompt_MouseDown"/>
+            <!--Canvas x:Name="cnvDmsDiff"
+                    MouseDown="DiffPrompt_MouseDown"/-->
+            <Image x:Name="imgDmsDiff" 
+                   Stretch="Fill"
+                   MouseDown="DiffPrompt_MouseDown"/>
         </Border>
 
         <Label Grid.Row="2"
@@ -48,9 +55,13 @@
                HorizontalContentAlignment="Center"
                VerticalContentAlignment="Center"
                MouseDown="Dms2Prompt_MouseDown"/>
-        <Canvas x:Name="cnvDms2" Grid.Row="2"
+        <!--Canvas x:Name="cnvDms2" Grid.Row="2"
                 Visibility="{Binding IsDms2Ready, Converter={StaticResource bool2vis}}"
-                MouseDown="Dms2Prompt_MouseDown"/>
+                MouseDown="Dms2Prompt_MouseDown"/-->
+        <Image x:Name="imgDms2" Grid.Row="2"
+               Stretch="Fill"
+               Visibility="{Binding IsDms2Ready, Converter={StaticResource bool2vis}}"
+               MouseDown="Dms2Prompt_MouseDown"/>
         <Label x:Name="lblDms2" Grid.Row="2"
                Visibility="{Binding IsDms2Ready, Converter={StaticResource bool2vis}}"
                HorizontalAlignment="Center"
