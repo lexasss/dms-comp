@@ -2,6 +2,11 @@
 
 namespace Tests;
 
+/// <summary>
+/// Compares two alternative implementations of DTW alogrithm
+/// (DTW is slow, this is why I tried to find some quicker solutions
+/// though without a success)
+/// </summary>
 [MemoryDiagnoser(false)]
 public class Benchmarks
 {
@@ -18,15 +23,15 @@ public class Benchmarks
     }
 
     [Benchmark]
-    public double Calc1()
+    public double DTW_Original()
     {
-        return ComputeDistance1(_data1, _data2);
+        return DTW_Original(_data1, _data2);
     }
 
     [Benchmark]
-    public double Calc2()
+    public double DTW_Alternative()
     {
-        return ComputeDistance2(_data1, _data2);
+        return DTW_Alternative(_data1, _data2);
     }
 
     // Internal
@@ -36,7 +41,13 @@ public class Benchmarks
     readonly float[] _data1;
     readonly float[] _data2;
 
-    double ComputeDistance1(ReadOnlySpan<float> data1, ReadOnlySpan<float> data2)
+    /// <summary>
+    /// Traditional implementation of DTW algorithm
+    /// </summary>
+    /// <param name="data1">datasets 1</param>
+    /// <param name="data2">datasets 2</param>
+    /// <returns>distance between the two datasets</returns>
+    double DTW_Original(ReadOnlySpan<float> data1, ReadOnlySpan<float> data2)
     {
         float[,] result = new float[data1.Length + 1, data2.Length + 1];
 
@@ -63,7 +74,13 @@ public class Benchmarks
         return result[data1.Length, data2.Length] / ((data1.Length + data2.Length + 2) / 2);
     }
 
-    double ComputeDistance2(ReadOnlySpan<float> data1, ReadOnlySpan<float> data2)
+    /// <summary>
+    /// Alternative implementation of DTW algorithm
+    /// </summary>
+    /// <param name="data1">datasets 1</param>
+    /// <param name="data2">datasets 2</param>
+    /// <returns>distance between the two datasets</returns>
+    double DTW_Alternative(ReadOnlySpan<float> data1, ReadOnlySpan<float> data2)
     {
         float[,] result = new float[data1.Length + 1, data2.Length + 1];
 

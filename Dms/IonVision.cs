@@ -1,5 +1,7 @@
 ﻿namespace DmsComparison.IonVision;
 
+/* Definitions of DMS JSON file */
+
 public record class ErrorRegister(
     bool AmbientPressureR1Under,
     bool AmbientPressureR1Over,

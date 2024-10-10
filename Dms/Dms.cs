@@ -4,6 +4,9 @@ using System.Windows;
 
 namespace DmsComparison;
 
+/// <summary>
+/// Stores a DMS measurement and its metadata
+/// </summary>
 public class Dms
 {
     public int Width { get; init; }
@@ -16,6 +19,11 @@ public class Dms
     public string Time { get; init; }
     public float[] Data => _scan.MeasurementData.IntensityTop;
 
+    /// <summary>
+    /// Constructor
+    /// </summary>
+    /// <param name="scan">Full DMS scan</param>
+    /// <param name="fullpath">Filename including full path</param>
     public Dms(IonVision.Scan scan, string fullpath)
     {
         _scan = scan;
@@ -31,16 +39,24 @@ public class Dms
         var usv = scan.MeasurementData.Usv;
         var firstUsv = usv[0];
         int i = 1;
-        while (usv[i] == firstUsv && ++i < usv.Length) { }
+        while (usv[i] == firstUsv && ++i < usv.Length)
+        {
+            // this cycle continues until the next Usv
+        }
 
         Width = i;
         Height = usv.Length / i;
 
         var str = _scan.Comments.ToString();
-        var textComment = JsonSerializer.Deserialize<Comments>(str);
-        Info = textComment?.text;
+        var textComment = JsonSerializer.Deserialize<Comments>(str ?? "");
+        Info = textComment?.Text;
     }
 
+    /// <summary>
+    /// Creates a DMS object instance by loading data from the file
+    /// </summary>
+    /// <param name="filename">JSON file storing DMS data</param>
+    /// <returns></returns>
     public static Dms? Load(string filename)
     {
         using StreamReader reader = new(filename);
@@ -65,7 +81,7 @@ public class Dms
 
     // Internal
 
-    record Comments(string text);
+    record Comments(string Text);
 
     readonly IonVision.Scan _scan;
 }

@@ -5,46 +5,56 @@ namespace DmsComparison;
 public class PlotColorTheme
 {
     /// <summary>
-    /// Creates a plot color. Origin and range are used to normalize value
+    /// Constructor
     /// </summary>
-    /// <param name="origin"></param>
-    /// <param name="value"></param>
-    /// <param name="range"></param>
-    /// <returns>Color</returns>
-    public Color ValueToColor(double origin, double value, double range)
+    /// <param name="theme">Optional theme (keys must be constantly increasing)</param>
+    public PlotColorTheme(KeyValuePair<double, Color>[]? theme = null)
+    {
+        if (theme != null)
+        {
+            var levels = theme.Select(kv => kv.Key).ToArray();
+            if (levels.Length < 2 ||
+                levels.Aggregate(-100.0, (accum, v) => v > accum ? v : double.MaxValue) > 100)    // the final will be >1 if the order is not ascending
+                goto defaults;
+
+            _levels = levels.ToArray();
+            _r = MakeColorScale(theme.Select(kv => kv.Value.R).ToArray());
+            _g = MakeColorScale(theme.Select(kv => kv.Value.G).ToArray());
+            _b = MakeColorScale(theme.Select(kv => kv.Value.B).ToArray());
+
+            return;
+        }
+
+    defaults:
+        // Default levels
+        _levels = [0, 0.05, 0.2, 0.4, 0.7, 1];
+
+        // Default colors: grey cyan green brown red white
+        _r = MakeColorScale(240, 0, 0, 128, 128, 216);
+        _g = MakeColorScale(240, 208, 176, 190, 0, 216);
+        _b = MakeColorScale(240, 208, 0, 0, 0, 216);
+    }
+
+    /// <summary>
+    /// Creates a plot color for a measurement value. Origin and range are used to normalize value
+    /// </summary>
+    /// <param name="value">The value for which a color must be computed</param>
+    /// <param name="origin">Used to subtract from the value </param>
+    /// <param name="range">The range the values stays within</param>
+    /// <returns>The corresponding color</returns>
+    public Color ValueToColor(double value, double origin, double range)
     {
         value = (value - origin) / range;
         var i = _levels.Skip(1).SkipLast(1).TakeWhile(level => value > level).Count();
         return Color.FromRgb(_r[i](value), _g[i](value), _b[i](value));
     }
 
-    public PlotColorTheme(KeyValuePair<double, Color>[]? theme = null)
-    {
-        //         Colors: grey cyan green brown red white
-        _r = MakeColorScale(240, 0, 0, 128, 128, 216);
-        _g = MakeColorScale(240, 208, 176, 190, 0, 216);
-        _b = MakeColorScale(240, 208, 0, 0, 0, 216);
-
-        if (theme != null)
-        {
-            var levels = theme.Select(kv => kv.Key).ToArray();
-            if (levels.Length < 2 ||
-                levels.Aggregate(-100.0, (accum, v) => v > accum ? v : double.MaxValue) > 100)    // the final will be >1 if the order is not ascending
-                return;
-
-            _levels = levels.ToArray();
-            _r = MakeColorScale(theme.Select(kv => kv.Value.R).ToArray());
-            _g = MakeColorScale(theme.Select(kv => kv.Value.G).ToArray());
-            _b = MakeColorScale(theme.Select(kv => kv.Value.B).ToArray());
-        }
-    }
-
 
     // Internal
 
-    readonly double[] _levels = [0, 0.05, 0.2, 0.4, 0.7, 1];
+    readonly double[] _levels;
 
-    // RGB functions, +1 to the number of levels.
+    // RGB functions, each array is one element less than the number of levels.
     readonly Func<double, byte>[] _r;
     readonly Func<double, byte>[] _g;
     readonly Func<double, byte>[] _b;
