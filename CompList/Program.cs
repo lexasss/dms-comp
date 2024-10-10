@@ -1,4 +1,16 @@
-﻿namespace CompList;
+﻿/* Computes distances between odor mixtures collected in Naa's setup using all available algorithms and conditions at once.
+ * 
+ * The script reads all JSON files in the selected folder.
+ * There should be 18 JSON files in Naa's setup, but the script may take any amount of files.
+ * Also, each JSON must contain a comment { text: "..." } with the first word labelling the measurement category.
+ * In Naa's setup, these were Mix17, Mix50 and Mix83 produced with 2ch AutOlD "Comparison" utility.
+ * However, other labels should be OK also.
+ * 
+ * The scripts outputs 3 tables into console: mean, std and the analysis of anomalies.
+ * Each table should be copied to the Excel sheet.
+ */
+
+namespace CompList;
 
 using DmsComparison;
 using DmsComparison.Algorithms;

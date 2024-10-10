@@ -41,7 +41,8 @@ public class Dms
         int i = 1;
         while (usv[i] == firstUsv && ++i < usv.Length)
         {
-            // this cycle continues until the next Usv
+            // This cycle continues until the next Usv value is detected
+            // This way we get the number of DMS columns stored in i
         }
 
         Width = i;
@@ -49,7 +50,7 @@ public class Dms
 
         var str = _scan.Comments.ToString();
         var textComment = JsonSerializer.Deserialize<Comments>(str ?? "");
-        Info = textComment?.Text;
+        Info = textComment?.text;
     }
 
     /// <summary>
@@ -81,7 +82,7 @@ public class Dms
 
     // Internal
 
-    record Comments(string Text);
+    record Comments(string text);
 
     readonly IonVision.Scan _scan;
 }
