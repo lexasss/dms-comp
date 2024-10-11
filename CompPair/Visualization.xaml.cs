@@ -85,7 +85,10 @@ public partial class Visualization : UserControl
     private void AbsoluteScale_CheckChanged(object sender, RoutedEventArgs e)
     {
         if (_isInitialized)
+        {
             ReportAbsoluteScaleChanged();
+            UsingAbsoluteScaleChanged?.Invoke(this, chkAbsoluteScale.IsChecked == true);
+        }
     }
 
     private void AbsoluteScale_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)

@@ -18,16 +18,15 @@ public static class Loader
         return false;
     }
 
-    public static bool LoadTwoDmsFiles(Action<Dms?> proceed1, Action<Dms?> proceed2)
+    public static bool LoadTwoDmsFiles(Action<Dms?, Dms?> proceed)
     {
         (string? filename1, string? filename2) = SelectTwoDmsFiles();
         if (!string.IsNullOrEmpty(filename1) && !string.IsNullOrEmpty(filename2))
         {
             var dms1 = Dms.Load(filename1);
-            proceed1(dms1);
-
             var dms2 = Dms.Load(filename2);
-            proceed2(dms2);
+
+            proceed(dms1, dms2);
 
             return dms1 != null && dms2 != null;
         }

@@ -1,0 +1,32 @@
+﻿<UserControl x:Class="CompPair.DmsPlot"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:CompPair"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    
+    <UserControl.Resources>
+        <local:BoolToVisibilityConverter x:Key="bool2vis"/>
+    </UserControl.Resources>
+    
+    <Grid>
+        <Label Grid.Row="0"
+               Content="Click to select a DMS measurement file"
+               HorizontalContentAlignment="Center"
+               VerticalContentAlignment="Center"
+               MouseDown="DmsPrompt_MouseDown"/>
+        <!--Canvas x:Name="cnvDms" Grid.Row="0"
+                Visibility="{Binding IsDmsReady, Converter={StaticResource bool2vis}}"
+                MouseDown="DmsPrompt_MouseDown"/-->
+        <Image x:Name="imgDms" Grid.Row="0"
+               Stretch="Fill"
+               Visibility="{Binding IsDmsReady, Converter={StaticResource bool2vis}}"
+               MouseDown="DmsPrompt_MouseDown"/>
+        <Label x:Name="lblDms" Grid.Row="0"
+               Visibility="{Binding IsDmsReady, Converter={StaticResource bool2vis}}"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Bottom"/>
+    </Grid>
+</UserControl>

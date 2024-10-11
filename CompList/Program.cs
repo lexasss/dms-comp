@@ -113,7 +113,7 @@ public class Program
         foreach (var file in files)
         {
             var dms = Dms.Load(file);
-            string? mixType = dms?.Info?.Split(",")[0][3..];
+            string? mixType = dms?.MixType;
             if (dms == null || mixType == null)
                 continue;
 

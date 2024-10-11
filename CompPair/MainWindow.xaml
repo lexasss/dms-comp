@@ -5,37 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CompPair"
         mc:Ignorable="d"
-        Title="DMS Pair Analyzer"
+        Title="DMS Comparator"
         Height="930" Width="900"
         MouseMove="Window_MouseMove"
         Closed="Window_Closed">
 
-    <Window.Resources>
-        <local:BoolToVisibilityConverter x:Key="bool2vis"/>
-    </Window.Resources>
-    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <Label Grid.Row="0"
-               Content="Click to select a DMS measurement file"
-               HorizontalContentAlignment="Center"
-               VerticalContentAlignment="Center"
-               MouseDown="Dms1Prompt_MouseDown"/>
-        <!--Canvas x:Name="cnvDms1" Grid.Row="0"
-                Visibility="{Binding IsDms1Ready, Converter={StaticResource bool2vis}}"
-                MouseDown="Dms1Prompt_MouseDown"/-->
-        <Image x:Name="imgDms1" Grid.Row="0"
-               Stretch="Fill"
-               Visibility="{Binding IsDms1Ready, Converter={StaticResource bool2vis}}"
-               MouseDown="Dms1Prompt_MouseDown"/>
-        <Label x:Name="lblDms1" Grid.Row="0"
-               Visibility="{Binding IsDms1Ready, Converter={StaticResource bool2vis}}"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Bottom"/>
+        <local:DmsPlot x:Name="dmsPlot1" Grid.Row="0"
+                       DmsLoaded="DmsPlot_DmsLoaded"/>
 
         <Label Grid.Row="1"
                Content="Click to select two DMS measurement files"
@@ -45,29 +27,20 @@
         <Border Grid.Row="1"
                 BorderBrush="#FF8A8A8A"
                 BorderThickness="0,3">
-            <!--Canvas x:Name="cnvDmsDiff"
+            <Grid>
+                <!--Canvas x:Name="cnvDmsDiff"
                     MouseDown="DiffPrompt_MouseDown"/-->
-            <Image x:Name="imgDmsDiff" 
-                   Stretch="Fill"
-                   MouseDown="DiffPrompt_MouseDown"/>
+                <Image x:Name="imgDmsDiff" 
+                       Stretch="Fill"
+                       MouseDown="DiffPrompt_MouseDown"/>
+                <Label x:Name="lblDmsDiff" Grid.Row="0"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Bottom"/>
+            </Grid>
         </Border>
 
-        <Label Grid.Row="2"
-               Content="Click to select a DMS measurement file"
-               HorizontalContentAlignment="Center"
-               VerticalContentAlignment="Center"
-               MouseDown="Dms2Prompt_MouseDown"/>
-        <!--Canvas x:Name="cnvDms2" Grid.Row="2"
-                Visibility="{Binding IsDms2Ready, Converter={StaticResource bool2vis}}"
-                MouseDown="Dms2Prompt_MouseDown"/-->
-        <Image x:Name="imgDms2" Grid.Row="2"
-               Stretch="Fill"
-               Visibility="{Binding IsDms2Ready, Converter={StaticResource bool2vis}}"
-               MouseDown="Dms2Prompt_MouseDown"/>
-        <Label x:Name="lblDms2" Grid.Row="2"
-               Visibility="{Binding IsDms2Ready, Converter={StaticResource bool2vis}}"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Bottom"/>
+        <local:DmsPlot x:Name="dmsPlot2" Grid.Row="2"
+                       DmsLoaded="DmsPlot_DmsLoaded"/>
 
         <StackPanel x:Name="stpTools" Grid.Row="0" Grid.RowSpan="3"
                     HorizontalAlignment="Right"

@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Net;
 using System.Text.Json;
 using System.Windows;
 
@@ -12,6 +13,7 @@ public class Dms
     public int Width { get; init; }
     public int Height { get; init; }
     public string? Info { get; init; }
+    public string? MixType => Info?.Split(",")[0][3..];
     public string FullPath { get; init; }
     public string Folder { get; init; }
     public string Filename { get; init; }

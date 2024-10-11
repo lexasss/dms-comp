@@ -59,25 +59,19 @@ public class PlotColorTheme
     readonly Func<double, byte>[] _g;
     readonly Func<double, byte>[] _b;
 
-    // Helpers
-    private (double, double) GetMinMax(int levelIndex)
-    {
-        var min = levelIndex < 0 ? _levels[0] : _levels[levelIndex];
-        var max = levelIndex >= _levels.Length - 1 ? _levels[^1] : _levels[levelIndex + 1];
-        return (min, max);
-    }
-
     // Constant and transition functions for a custom scale, X..Y where 0 <= X,Y <= 255 and X < Y
     private static Func<double, byte> Keep(byte value) => (double _) => value;
     private Func<double, byte> Up(int levelIndex, byte from, byte to)
     {
-        var (min, max) = GetMinMax(levelIndex);
-        return (double value) => (byte)Math.Min(to, from + (to - from) * (value - min) * (1f / (max - min)));
+        var min = _levels[levelIndex];
+        var max = _levels[levelIndex + 1];
+        return (double value) => (byte)Math.Max(from, Math.Min(to, from + (to - from) * (value - min) / (max - min)));
     }
     private Func<double, byte> Down(int levelIndex, byte from, byte to)
     {
-        var (min, max) = GetMinMax(levelIndex);
-        return (double value) => (byte)Math.Min(from, to + (from - to) * (max - value) * (1f / (max - min)));
+        var min = _levels[levelIndex];
+        var max = _levels[levelIndex + 1];
+        return (double value) => (byte)Math.Max(to, Math.Min(from, to + (from - to) * (max - value) / (max - min)));
     }
 
     private Func<double, byte>[] MakeColorScale(params byte[] colorValues)
