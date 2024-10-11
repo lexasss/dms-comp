@@ -8,9 +8,9 @@
              d:DesignHeight="150" d:DesignWidth="180">
     <StackPanel>
         <Label Content="Visualization"
-                   FontSize="16"
-                   FontWeight="Bold"
-                   HorizontalAlignment="Center"/>
+               FontSize="16"
+               FontWeight="Bold"
+               HorizontalAlignment="Center"/>
         <StackPanel>
             <CheckBox x:Name="chkAbsoluteScale"
                       Content="DMS plot absolute scale"

@@ -76,13 +76,13 @@
                     MouseUp="ToolPanel_MouseUp"
                     MouseMove="ToolPanel_MouseMove">
             <Border Padding="4"
-                    Background="#E0E0E0"
+                    Background="#FFF1FBF7"
                     BorderBrush="#FF8A8A8A"
                     BorderThickness="3">
                 <local:Distance x:Name="dstDistance"/>
             </Border>
             <Border Padding="4"
-                    Background="#E0E0E0"
+                    Background="#FFF1FBF7"
                     BorderBrush="#FF8A8A8A"
                     BorderThickness="3">
                 <local:Visualization x:Name="visVisOptions"

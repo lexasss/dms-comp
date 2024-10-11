@@ -8,7 +8,7 @@
              d:DesignHeight="250" d:DesignWidth="300">
     
     <UserControl.Resources>
-        <Style TargetType="Label">
+        <Style TargetType="Label" x:Key="Header">
             <Setter Property="Padding" Value="0,0,0,12"/>
         </Style>
         <Style TargetType="RadioButton">
@@ -36,15 +36,15 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
-            <TextBlock FontSize="14"
-                       FontWeight="Bold"
-                       HorizontalAlignment="Center"
-                       Text="Distance"/>
+            <Label Content="Distance"
+                   FontSize="16"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"/>
             <Separator/>
         </StackPanel>
 
         <StackPanel Grid.Row="1" Grid.Column="0">
-            <Label Content="Algorithm"/>
+            <Label Style="{StaticResource Header}" Content="Algorithm"/>
             <StackPanel x:Name="stpAlgorithms">
                 <!-- to be fill in the code -->
             </StackPanel>
@@ -56,12 +56,12 @@
                 Margin="12,0,12,0"/>
 
         <StackPanel Grid.Row="1" Grid.Column="2">
-            <Label Content="Pre-processing"/>
+            <Label Style="{StaticResource Header}" Content="Pre-processing"/>
             <CheckBox x:Name="chkRectify"
                   Content="Rectify"
                   IsChecked="{Binding ShouldRectify}"/>
             <Separator/>
-            <Label Content="Normalization"/>
+            <Label Style="{StaticResource Header}" Content="Normalization"/>
             <StackPanel x:Name="stpNormalizationType">
                 <!-- to be fill in the code -->
             </StackPanel>

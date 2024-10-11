@@ -20,6 +20,7 @@ public partial class Visualization : UserControl
         var settings = Properties.Settings.Default;
         chkAbsoluteScale.IsChecked = settings.Vis_UseAbsoluteScale;
         sldAbsoluteScale.Value = settings.Vis_AbsoluteScale;
+        sldDiffScale.Value = settings.Vis_DiffScale;
 
         _isInitialized = true;
     }
