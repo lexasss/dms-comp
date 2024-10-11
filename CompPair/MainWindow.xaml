@@ -6,7 +6,9 @@
         xmlns:local="clr-namespace:CompPair"
         mc:Ignorable="d"
         Title="DMS Pair Analyzer"
-        Height="930" Width="900">
+        Height="930" Width="900"
+        MouseMove="Window_MouseMove"
+        Closed="Window_Closed">
 
     <Window.Resources>
         <local:BoolToVisibilityConverter x:Key="bool2vis"/>
@@ -67,9 +69,12 @@
                HorizontalAlignment="Center"
                VerticalAlignment="Bottom"/>
 
-        <StackPanel Grid.Row="0" Grid.RowSpan="3"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Center">
+        <StackPanel x:Name="stpTools" Grid.Row="0" Grid.RowSpan="3"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    MouseDown="ToolPanel_MouseDown"
+                    MouseUp="ToolPanel_MouseUp"
+                    MouseMove="ToolPanel_MouseMove">
             <Border Padding="4"
                     Background="#E0E0E0"
                     BorderBrush="#FF8A8A8A"

@@ -17,5 +17,11 @@
     <Setting Name="Vis_AbsoluteScale" Type="System.Double" Scope="User">
       <Value Profile="(Default)">400</Value>
     </Setting>
+    <Setting Name="UI_ToolPanel_HorzAlign" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">2</Value>
+    </Setting>
+    <Setting Name="UI_ToolPanel_VertAlign" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

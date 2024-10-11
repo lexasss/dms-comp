@@ -25,6 +25,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         var settings = Properties.Settings.Default;
         chkAbsoluteScale.IsChecked = settings.Vis_UseAbsoluteScale;
         sldAbsoluteScale.Value = settings.Vis_AbsoluteScale;
+        stpTools.HorizontalAlignment = (HorizontalAlignment)settings.UI_ToolPanel_HorzAlign;
+        stpTools.VerticalAlignment = (VerticalAlignment)settings.UI_ToolPanel_VertAlign;
 
         _isInitialized = true;
     }
@@ -144,9 +146,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
         else
         {
+            Painter.Clear(image);
             dstDistance.Clear();
-            //canvas.Children.Clear();
-            image.Source = null;
             MessageBox.Show("DMS data have distinct number of rows or colunms and therefore their difference cannot be displayed.",
                 "DMS loader", MessageBoxButton.OK, MessageBoxImage.Error);
         }
@@ -239,5 +240,65 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         if (_isInitialized)
             UpdatePlotOnThresholdChange();
+    }
+
+    bool _isToolPanelDragging = false;
+    bool _canDragToolPanel = false;
+    Point? _toolPanelClickPoint = null;
+
+    private void ToolPanel_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        _isToolPanelDragging = true;
+
+        _toolPanelClickPoint = e.GetPosition(stpTools);
+
+        stpTools.Cursor = Cursors.Hand;
+        stpTools.CaptureMouse();
+    }
+
+    private void ToolPanel_MouseUp(object sender, MouseButtonEventArgs e)
+    {
+        _isToolPanelDragging = false;
+        _canDragToolPanel = false;
+        _toolPanelClickPoint = null;
+
+        stpTools.Cursor = Cursors.Arrow;
+        stpTools.ReleaseMouseCapture();
+    }
+
+    private void ToolPanel_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_toolPanelClickPoint != null && !_canDragToolPanel)
+        {
+            var mousePos = e.GetPosition(stpTools);
+            if (Math.Sqrt(Math.Pow(mousePos.X - _toolPanelClickPoint.Value.X, 2) + Math.Pow(mousePos.Y - _toolPanelClickPoint.Value.Y, 2)) > 8)
+            {
+                _canDragToolPanel = true;
+            }
+        }
+    }
+
+    private void Window_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_canDragToolPanel)
+        {
+            var cellSizeX = ActualWidth / 3;
+            var cellSizeY = ActualHeight / 3;
+            var mousePos = e.GetPosition(this);
+            stpTools.HorizontalAlignment = mousePos.X < cellSizeX ? HorizontalAlignment.Left :
+                                           mousePos.X > 2 * cellSizeX ? HorizontalAlignment.Right :
+                                           HorizontalAlignment.Center;
+            stpTools.VerticalAlignment = mousePos.Y < cellSizeY ? VerticalAlignment.Top:
+                                         mousePos.Y > 2 * cellSizeY ? VerticalAlignment.Bottom :
+                                         VerticalAlignment.Center;
+        }
+    }
+
+    private void Window_Closed(object sender, EventArgs e)
+    {
+        var settings = Properties.Settings.Default;
+        settings.UI_ToolPanel_HorzAlign = (int)stpTools.HorizontalAlignment;
+        settings.UI_ToolPanel_VertAlign = (int)stpTools.VerticalAlignment;
+        settings.Save();
     }
 }

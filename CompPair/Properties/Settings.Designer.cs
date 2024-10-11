@@ -82,5 +82,29 @@ namespace CompPair.Properties {
                 this["Vis_AbsoluteScale"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2")]
+        public int UI_ToolPanel_HorzAlign {
+            get {
+                return ((int)(this["UI_ToolPanel_HorzAlign"]));
+            }
+            set {
+                this["UI_ToolPanel_HorzAlign"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public int UI_ToolPanel_VertAlign {
+            get {
+                return ((int)(this["UI_ToolPanel_VertAlign"]));
+            }
+            set {
+                this["UI_ToolPanel_VertAlign"] = value;
+            }
+        }
     }
 }
