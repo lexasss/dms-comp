@@ -1,0 +1,39 @@
+﻿<UserControl x:Class="CompPair.Visualization"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:CompPair"
+             mc:Ignorable="d" 
+             d:DesignHeight="150" d:DesignWidth="180">
+    <StackPanel>
+        <Label Content="Visualization"
+               FontSize="16"
+               FontWeight="Bold"
+               HorizontalAlignment="Center"/>
+        <CheckBox x:Name="chkAbsoluteScale"
+                  Content="DMS plot absolute scale"
+                  Checked="AbsoluteScale_CheckChanged"
+                  Unchecked="AbsoluteScale_CheckChanged"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Slider x:Name="sldAbsoluteScale" Grid.Column="0"
+                    Margin="0,8,0,6"
+                    Minimum="100"
+                    Maximum="1000"
+                    LargeChange="100"
+                    SmallChange="10"
+                    Value="300"
+                    IsEnabled="{Binding IsChecked, ElementName=chkAbsoluteScale}"
+                    AutoToolTipPlacement="TopLeft"
+                    ValueChanged="AbsoluteScale_ValueChanged"/>
+            <Label Grid.Column="1"
+                   VerticalAlignment="Center"
+                   Content="{Binding Value, ElementName=sldAbsoluteScale}"
+                   ContentStringFormat="{}{0:F0}"/>
+        </Grid>
+    </StackPanel>
+</UserControl>

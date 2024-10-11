@@ -19,16 +19,14 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         InitializeComponent();
         DataContext = this;
 
-        RenderOptions.SetBitmapScalingMode(imgDms1, BitmapScalingMode.NearestNeighbor);
-        RenderOptions.SetEdgeMode(imgDms1, EdgeMode.Aliased);
+        //RenderOptions.SetBitmapScalingMode(imgDms1, BitmapScalingMode.NearestNeighbor);
+        //RenderOptions.SetBitmapScalingMode(imgDms2, BitmapScalingMode.NearestNeighbor);
+        //RenderOptions.SetEdgeMode(imgDms1, EdgeMode.Aliased);
+        //RenderOptions.SetEdgeMode(imgDms2, EdgeMode.Aliased);
 
         var settings = Properties.Settings.Default;
-        chkAbsoluteScale.IsChecked = settings.Vis_UseAbsoluteScale;
-        sldAbsoluteScale.Value = settings.Vis_AbsoluteScale;
         stpTools.HorizontalAlignment = (HorizontalAlignment)settings.UI_ToolPanel_HorzAlign;
         stpTools.VerticalAlignment = (VerticalAlignment)settings.UI_ToolPanel_VertAlign;
-
-        _isInitialized = true;
     }
 
     // Internal
@@ -36,10 +34,9 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     Dms? _dms1 = null;
     Dms? _dms2 = null;
 
-    CancellationTokenSource _cts = new CancellationTokenSource();
-    DateTime _timerStarted = DateTime.UtcNow.AddYears(-1);
-
-    bool _isInitialized = false;
+    bool _isToolPanelDragging = false;
+    bool _canDragToolPanel = false;
+    Point? _toolPanelClickPoint = null;
 
     private static bool LoadDmsFile(Action<Dms?> proceed)
     {
@@ -128,7 +125,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void DisplayDms(Image image, Dms dms)
     {
-        var scale = chkAbsoluteScale.IsChecked ?? false ? (float)sldAbsoluteScale.Value : 0;
+        var scale = visVisOptions.IsUsingAbosluteScale ? visVisOptions.AbsoluteScale : 0;
         Painter.DrawPlot(image, dms.Height, dms.Width, dms.Data, scale);
 
         if (_dms1 != null && _dms2 != null)
@@ -151,45 +148,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             MessageBox.Show("DMS data have distinct number of rows or colunms and therefore their difference cannot be displayed.",
                 "DMS loader", MessageBoxButton.OK, MessageBoxImage.Error);
         }
-    }
-
-    public void UpdatePlotOnThresholdChange()
-    {
-        Dispatcher.Invoke(() =>
-        {
-            var scale = chkAbsoluteScale.IsChecked ?? false ? (float)sldAbsoluteScale.Value : 0;
-            if (_dms1 != null)
-                Painter.DrawPlot(imgDms1, _dms1.Height, _dms1.Width, _dms1.Data, scale);
-            if (_dms2 != null)
-                Painter.DrawPlot(imgDms2, _dms2.Height, _dms2.Width, _dms2.Data, scale);
-
-            var settings = Properties.Settings.Default;
-            settings.Vis_UseAbsoluteScale = chkAbsoluteScale.IsChecked ?? false;
-            settings.Vis_AbsoluteScale = sldAbsoluteScale.Value;
-            settings.Save();
-        });
-    }
-
-    public void Throttle(int interval, Action action)
-    {
-        _cts.Cancel();
-        _cts = new CancellationTokenSource();
-
-        var curTime = DateTime.UtcNow;
-        if (curTime.Subtract(_timerStarted).TotalMilliseconds < interval)
-            interval -= (int)curTime.Subtract(_timerStarted).TotalMilliseconds;
-
-        Task.Run(async delegate
-        {
-            try
-            {
-                await Task.Delay(interval, _cts.Token);
-                action();
-            }
-            catch { }
-        });
-
-        _timerStarted = curTime;
     }
 
     // UI events
@@ -230,22 +188,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         );
     }
 
-    private void AbsoluteScale_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-    {
-        if (_isInitialized)
-            Throttle(1000, UpdatePlotOnThresholdChange);
-    }
-
-    private void AbsoluteScale_CheckChanged(object sender, RoutedEventArgs e)
-    {
-        if (_isInitialized)
-            UpdatePlotOnThresholdChange();
-    }
-
-    bool _isToolPanelDragging = false;
-    bool _canDragToolPanel = false;
-    Point? _toolPanelClickPoint = null;
-
     private void ToolPanel_MouseDown(object sender, MouseButtonEventArgs e)
     {
         _isToolPanelDragging = true;
@@ -276,6 +218,15 @@ public partial class MainWindow : Window, INotifyPropertyChanged
                 _canDragToolPanel = true;
             }
         }
+    }
+
+    private void VisOptions_AbsoluteScaleChanged(object sender, double e)
+    {
+        var scale = visVisOptions.IsUsingAbosluteScale ? (float)e : 0;
+        if (_dms1 != null)
+            Painter.DrawPlot(imgDms1, _dms1.Height, _dms1.Width, _dms1.Data, scale);
+        if (_dms2 != null)
+            Painter.DrawPlot(imgDms2, _dms2.Height, _dms2.Width, _dms2.Data, scale);
     }
 
     private void Window_MouseMove(object sender, MouseEventArgs e)
