@@ -85,7 +85,9 @@
                     Background="#E0E0E0"
                     BorderBrush="#FF8A8A8A"
                     BorderThickness="3">
-                <local:Visualization x:Name="visVisOptions" AbsoluteScaleChanged="VisOptions_AbsoluteScaleChanged"/>
+                <local:Visualization x:Name="visVisOptions"
+                                     AbsoluteScaleChanged="VisOptions_AbsoluteScaleChanged"
+                                     DiffScaleChanged="VisOptions_DiffScaleChanged"/>
             </Border>
         </StackPanel>
     </Grid>

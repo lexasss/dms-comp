@@ -8,32 +8,59 @@
              d:DesignHeight="150" d:DesignWidth="180">
     <StackPanel>
         <Label Content="Visualization"
-               FontSize="16"
-               FontWeight="Bold"
-               HorizontalAlignment="Center"/>
-        <CheckBox x:Name="chkAbsoluteScale"
-                  Content="DMS plot absolute scale"
-                  Checked="AbsoluteScale_CheckChanged"
-                  Unchecked="AbsoluteScale_CheckChanged"/>
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Slider x:Name="sldAbsoluteScale" Grid.Column="0"
-                    Margin="0,8,0,6"
-                    Minimum="100"
-                    Maximum="1000"
-                    LargeChange="100"
-                    SmallChange="10"
-                    Value="300"
-                    IsEnabled="{Binding IsChecked, ElementName=chkAbsoluteScale}"
-                    AutoToolTipPlacement="TopLeft"
-                    ValueChanged="AbsoluteScale_ValueChanged"/>
-            <Label Grid.Column="1"
-                   VerticalAlignment="Center"
-                   Content="{Binding Value, ElementName=sldAbsoluteScale}"
-                   ContentStringFormat="{}{0:F0}"/>
-        </Grid>
+                   FontSize="16"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"/>
+        <StackPanel>
+            <CheckBox x:Name="chkAbsoluteScale"
+                      Content="DMS plot absolute scale"
+                      Checked="AbsoluteScale_CheckChanged"
+                      Unchecked="AbsoluteScale_CheckChanged"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="36"/>
+                </Grid.ColumnDefinitions>
+                <Slider x:Name="sldAbsoluteScale" Grid.Column="0"
+                        Margin="0,8,0,6"
+                        Minimum="100"
+                        Maximum="1000"
+                        LargeChange="100"
+                        SmallChange="10"
+                        Value="300"
+                        IsEnabled="{Binding IsChecked, ElementName=chkAbsoluteScale}"
+                        AutoToolTipPlacement="TopLeft"
+                        ValueChanged="AbsoluteScale_ValueChanged"/>
+                <Label Grid.Column="1"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Content="{Binding Value, ElementName=sldAbsoluteScale}"
+                       ContentStringFormat="{}{0:F0}"/>
+            </Grid>
+        </StackPanel>
+        
+        <StackPanel>
+            <Label Content="Difference plot scale"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="32"/>
+                </Grid.ColumnDefinitions>
+                <Slider x:Name="sldDiffScale" Grid.Column="0"
+                        Margin="0,8,0,6"
+                        Minimum="1"
+                        Maximum="10"
+                        LargeChange="1"
+                        SmallChange="0.2"
+                        Value="1"
+                        AutoToolTipPlacement="TopLeft"
+                        ValueChanged="DiffScale_ValueChanged"/>
+                <Label Grid.Column="1"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Content="{Binding Value, ElementName=sldDiffScale}"
+                       ContentStringFormat="{}{0:F1}"/>
+            </Grid>
+        </StackPanel>
     </StackPanel>
 </UserControl>

@@ -106,5 +106,17 @@ namespace CompPair.Properties {
                 this["UI_ToolPanel_VertAlign"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public double Vis_DiffScale {
+            get {
+                return ((double)(this["Vis_DiffScale"]));
+            }
+            set {
+                this["Vis_DiffScale"] = value;
+            }
+        }
     }
 }

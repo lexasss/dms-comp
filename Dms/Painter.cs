@@ -35,13 +35,14 @@ public static class Painter
     /// <param name="cols">Number of columns (same for both datasets)</param>
     /// <param name="data1">Dataset 1</param>
     /// <param name="data2">Dataset 2</param>
+    /// <param name="scale">Scale, >=1</param>
     /// <param name="theme">Optional color theme</param>
     /// <exception cref="NotSupportedException">Thrown if T is not among the supported types</exception>
-    public static void DrawDiff<T>(T dest, int rows, int cols, float[] data1, float[] data2, PlotColorTheme? theme = null)
+    public static void DrawDiff<T>(T dest, int rows, int cols, float[] data1, float[] data2, float scale = 1, PlotColorTheme? theme = null)
     {
         float[] values = new float[data1.Length];
         for (int i = 0; i < data1.Length; i++)
-            values[i] = data1[i] - data2[i];
+            values[i] = (data1[i] - data2[i]) * scale;
 
         theme ??= new(_defaultDiffTheme);
 

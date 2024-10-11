@@ -7,9 +7,11 @@ public partial class Visualization : UserControl
 {
     public event EventHandler<bool>? UsingAbsoluteScaleChanged;
     public event EventHandler<double>? AbsoluteScaleChanged;
+    public event EventHandler<double>? DiffScaleChanged;
 
     public bool IsUsingAbosluteScale => chkAbsoluteScale.IsChecked == true;
-    public float AbsoluteScale => (float)sldAbsoluteScale.Value;
+    public double AbsoluteScale => sldAbsoluteScale.Value;
+    public double DiffScale => sldDiffScale.Value;
 
     public Visualization()
     {
@@ -64,8 +66,26 @@ public partial class Visualization : UserControl
         });
     }
 
+    public void ReportDiffScaleChanged()
+    {
+        Dispatcher.Invoke(() =>
+        {
+            var settings = Properties.Settings.Default;
+            settings.Vis_DiffScale = sldDiffScale.Value;
+            settings.Save();
+
+            DiffScaleChanged?.Invoke(this, sldDiffScale.Value);
+        });
+    }
+
 
     // UI
+
+    private void AbsoluteScale_CheckChanged(object sender, RoutedEventArgs e)
+    {
+        if (_isInitialized)
+            ReportAbsoluteScaleChanged();
+    }
 
     private void AbsoluteScale_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
@@ -73,9 +93,9 @@ public partial class Visualization : UserControl
             Throttle(500, ReportAbsoluteScaleChanged);
     }
 
-    private void AbsoluteScale_CheckChanged(object sender, RoutedEventArgs e)
+    private void DiffScale_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
         if (_isInitialized)
-            ReportAbsoluteScaleChanged();
+            Throttle(500, ReportDiffScaleChanged);
     }
 }

@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace CompPair;
 
@@ -38,70 +37,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     bool _canDragToolPanel = false;
     Point? _toolPanelClickPoint = null;
 
-    private static bool LoadDmsFile(Action<Dms?> proceed)
-    {
-        string? filename = SelectDmsFile();
-        if (!string.IsNullOrEmpty(filename))
-        {
-            var dms = Dms.Load(filename);
-            proceed(dms);
-
-            return dms != null;
-        }
-
-        return false;
-    }
-
-    private static bool LoadTwoDmsFiles(Action<Dms?> proceed1, Action<Dms?> proceed2)
-    {
-        (string? filename1, string? filename2) = SelectTwoDmsFiles();
-        if (!string.IsNullOrEmpty(filename1) && !string.IsNullOrEmpty(filename2))
-        {
-            var dms1 = Dms.Load(filename1);
-            proceed1(dms1);
-
-            var dms2 = Dms.Load(filename2);
-            proceed2(dms2);
-
-            return dms1 != null && dms2 != null;
-        }
-
-        return false;
-    }
-
-    private static string? SelectDmsFile()
-    {
-        var ofd = new Microsoft.Win32.OpenFileDialog();
-        ofd.Filter = "JSON files|*.json";
-        if (ofd.ShowDialog() == true)
-        {
-            return ofd.FileName;
-        }
-
-        return null;
-    }
-
-    private static (string?, string?) SelectTwoDmsFiles()
-    {
-        var ofd = new Microsoft.Win32.OpenFileDialog();
-        ofd.Filter = "JSON files|*.json";
-        ofd.Multiselect = true;
-        ofd.Title = "Select two DMS files";
-        if (ofd.ShowDialog() == true)
-        {
-            if (ofd.FileNames.Length == 2)
-            {
-                return (ofd.FileNames[0], ofd.FileNames[1]);
-            }
-            else
-            {
-                MessageBox.Show("Please select exactly two DMS files.", "DMS comparison", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        return (null, null);
-    }
-
     private void UpdateDmsUI(Dms? dms, Image image, Label info)
     {
         if (dms != null)
@@ -126,7 +61,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     private void DisplayDms(Image image, Dms dms)
     {
         var scale = visVisOptions.IsUsingAbosluteScale ? visVisOptions.AbsoluteScale : 0;
-        Painter.DrawPlot(image, dms.Height, dms.Width, dms.Data, scale);
+        Painter.DrawPlot(image, dms.Height, dms.Width, dms.Data, (float)scale);
 
         if (_dms1 != null && _dms2 != null)
         {
@@ -138,7 +73,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         if (dms1.Height == dms2.Height && dms1.Width == dms2.Width)
         {
-            Painter.DrawDiff(image, dms1.Height, dms1.Width, dms1.Data, dms2.Data);
+            Painter.DrawDiff(image, dms1.Height, dms1.Width, dms1.Data, dms2.Data, (float)visVisOptions.DiffScale);
             dstDistance.Update(dms1, dms2);
         }
         else
@@ -152,9 +87,33 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     // UI events
 
+    private void Window_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_canDragToolPanel)
+        {
+            var cellSizeX = ActualWidth / 3;
+            var cellSizeY = ActualHeight / 3;
+            var mousePos = e.GetPosition(this);
+            stpTools.HorizontalAlignment = mousePos.X < cellSizeX ? HorizontalAlignment.Left :
+                                           mousePos.X > 2 * cellSizeX ? HorizontalAlignment.Right :
+                                           HorizontalAlignment.Center;
+            stpTools.VerticalAlignment = mousePos.Y < cellSizeY ? VerticalAlignment.Top :
+                                         mousePos.Y > 2 * cellSizeY ? VerticalAlignment.Bottom :
+                                         VerticalAlignment.Center;
+        }
+    }
+
+    private void Window_Closed(object sender, EventArgs e)
+    {
+        var settings = Properties.Settings.Default;
+        settings.UI_ToolPanel_HorzAlign = (int)stpTools.HorizontalAlignment;
+        settings.UI_ToolPanel_VertAlign = (int)stpTools.VerticalAlignment;
+        settings.Save();
+    }
+
     private void Dms1Prompt_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        LoadDmsFile(dms =>
+        Loader.LoadDmsFile(dms =>
         {
             _dms1 = dms;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDms1Ready)));
@@ -164,7 +123,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void Dms2Prompt_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        LoadDmsFile(dms =>
+        Loader.LoadDmsFile(dms =>
         {
             _dms2 = dms;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDms2Ready)));
@@ -174,7 +133,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void DiffPrompt_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        LoadTwoDmsFiles(
+        Loader.LoadTwoDmsFiles(
             dms => {
                 _dms1 = dms;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDms1Ready)));
@@ -229,27 +188,11 @@ public partial class MainWindow : Window, INotifyPropertyChanged
             Painter.DrawPlot(imgDms2, _dms2.Height, _dms2.Width, _dms2.Data, scale);
     }
 
-    private void Window_MouseMove(object sender, MouseEventArgs e)
+    private void VisOptions_DiffScaleChanged(object sender, double e)
     {
-        if (_canDragToolPanel)
+        if (_dms1 != null && _dms2 != null && _dms1.Height == _dms2.Height && _dms1.Width == _dms2.Width)
         {
-            var cellSizeX = ActualWidth / 3;
-            var cellSizeY = ActualHeight / 3;
-            var mousePos = e.GetPosition(this);
-            stpTools.HorizontalAlignment = mousePos.X < cellSizeX ? HorizontalAlignment.Left :
-                                           mousePos.X > 2 * cellSizeX ? HorizontalAlignment.Right :
-                                           HorizontalAlignment.Center;
-            stpTools.VerticalAlignment = mousePos.Y < cellSizeY ? VerticalAlignment.Top:
-                                         mousePos.Y > 2 * cellSizeY ? VerticalAlignment.Bottom :
-                                         VerticalAlignment.Center;
+            Painter.DrawDiff(imgDmsDiff, _dms1.Height, _dms1.Width, _dms1.Data, _dms2.Data, (float)e);
         }
-    }
-
-    private void Window_Closed(object sender, EventArgs e)
-    {
-        var settings = Properties.Settings.Default;
-        settings.UI_ToolPanel_HorzAlign = (int)stpTools.HorizontalAlignment;
-        settings.UI_ToolPanel_VertAlign = (int)stpTools.VerticalAlignment;
-        settings.Save();
     }
 }
