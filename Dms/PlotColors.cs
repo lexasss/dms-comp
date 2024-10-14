@@ -1,26 +1,30 @@
 ﻿using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace DmsComparison;
 
-public class PlotColorTheme
+public class PlotColors
 {
+    public record ColorStop(double Level, Color Color);
+    public class Theme : HashSet<ColorStop>;
+
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="theme">Optional theme (keys must be constantly increasing)</param>
-    public PlotColorTheme(KeyValuePair<double, Color>[]? theme = null)
+    public PlotColors(Theme? theme = null)
     {
         if (theme != null)
         {
-            var levels = theme.Select(kv => kv.Key).ToArray();
+            var levels = theme.Select(cs => cs.Level).ToArray();
             if (levels.Length < 2 ||
-                levels.Aggregate(-100.0, (accum, v) => v > accum ? v : double.MaxValue) > 100)    // the final will be >1 if the order is not ascending
+                levels.Aggregate(-100.0, (accum, v) => v > accum ? v : double.MaxValue) > 100)    // the final will be >100 if the order is not ascending
                 goto defaults;
 
             _levels = levels.ToArray();
-            _r = MakeColorScale(theme.Select(kv => kv.Value.R).ToArray());
-            _g = MakeColorScale(theme.Select(kv => kv.Value.G).ToArray());
-            _b = MakeColorScale(theme.Select(kv => kv.Value.B).ToArray());
+            _r = MakeColorScale(theme.Select(cs => cs.Color.R).ToArray());
+            _g = MakeColorScale(theme.Select(cs => cs.Color.G).ToArray());
+            _b = MakeColorScale(theme.Select(cs => cs.Color.B).ToArray());
 
             return;
         }
@@ -47,6 +51,16 @@ public class PlotColorTheme
         value = (value - origin) / range;
         var i = _levels.Skip(1).SkipLast(1).TakeWhile(level => value > level).Count();
         return Color.FromRgb(_r[i](value), _g[i](value), _b[i](value));
+    }
+
+    public static void DrawTheme(Theme theme, Shape rect)
+    {
+        var gradient = new LinearGradientBrush();
+        var min = theme.Min(cs => cs.Level);
+        var max = theme.Max(cs => cs.Level);
+        foreach (var colorStop in theme)
+            gradient.GradientStops.Add(new GradientStop(colorStop.Color, (colorStop.Level - min) / (max - min)));
+        rect.Fill = gradient;
     }
 
 

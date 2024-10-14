@@ -10,6 +10,51 @@ namespace DmsComparison;
 /// </summary>
 public static class Painter
 {
+    public static PlotColors.Theme[] DmsThemes => new PlotColors.Theme[]{
+        [
+            new(0, Color.FromRgb(240, 240, 240)),
+            new(0.03, Color.FromRgb(0, 208, 208)),
+            new(0.2, Color.FromRgb(0, 176, 0)),
+            new(0.4, Color.FromRgb(128, 192, 0)),
+            new(0.7, Color.FromRgb(128, 0, 0)),
+            new(1, Color.FromRgb(216, 216, 216)),
+        ], [
+            new(0, Color.FromRgb(240, 240, 240)),
+            new(0.015, Color.FromRgb(0, 128, 208)),
+            new(0.1, Color.FromRgb(0, 176, 96)),
+            new(0.3, Color.FromRgb(216, 216, 0)),
+            new(0.6, Color.FromRgb(128, 64, 0)),
+            new(1, Color.FromRgb(216, 216, 216)),
+        ], [
+            new(0, Color.FromRgb(255, 255, 255)),
+            new(0.015, Color.FromRgb(255, 128, 128)),
+            new(0.1, Color.FromRgb(255, 128, 96)),
+            new(0.3, Color.FromRgb(255, 64, 64)),
+            new(0.6, Color.FromRgb(192, 32, 32)),
+            new(1, Color.FromRgb(128, 0, 0)),
+        ], [
+            new(0, Color.FromRgb(255, 255, 255)),
+            new(0.03, Color.FromRgb(0, 206, 64)),
+            new(0.15, Color.FromRgb(192, 192, 0)),
+            new(0.4, Color.FromRgb(128, 0, 0)),
+            new(0.7, Color.FromRgb(208, 0, 0)),
+            new(1, Color.FromRgb(224, 224, 224)),
+        ]
+    };
+    public static PlotColors.Theme[] DiffThemes => new PlotColors.Theme[] {
+        [
+            new(-1, Colors.Blue),
+            new(0, Colors.White),
+            new(1, Colors.Red),
+        ], [
+            new(-1, Colors.Blue),
+            new(-0.3, Color.FromRgb(106, 106, 106)),
+            new(0, Colors.White),
+            new(0.3, Color.FromRgb(106, 106, 106)),
+            new(1, Colors.Red),
+        ]
+    };
+
     /// <summary>
     /// Clears the drawing destination
     /// </summary>
@@ -38,13 +83,13 @@ public static class Painter
     /// <param name="scale">Scale, >=1</param>
     /// <param name="theme">Optional color theme</param>
     /// <exception cref="NotSupportedException">Thrown if T is not among the supported types</exception>
-    public static void DrawDiff<T>(T dest, int rows, int cols, float[] data1, float[] data2, float scale = 1, PlotColorTheme? theme = null)
+    public static void DrawDiff<T>(T dest, int rows, int cols, float[] data1, float[] data2, float scale = 1, PlotColors? theme = null)
     {
         float[] values = new float[data1.Length];
         for (int i = 0; i < data1.Length; i++)
             values[i] = (data1[i] - data2[i]) * scale;
 
-        theme ??= new(_defaultDiffTheme);
+        theme ??= new(DiffThemes[0]);
 
         float range = (data1.Max() + data2.Max()) / 2 - (data1.Min() + data2.Min()) / 2;
         float origin = 0;
@@ -69,7 +114,7 @@ public static class Painter
     /// Must be greater than 0, or 0 if this value is the max value from the dataset</param>
     /// <param name="theme">Optional color theme</param>
     /// <exception cref="NotSupportedException">Thrown if T is not among the supported types</exception>
-    public static void DrawPlot<T>(T dest, int rows, int cols, float[] data, float saturationValue = 0, PlotColorTheme? theme = null)
+    public static void DrawPlot<T>(T dest, int rows, int cols, float[] data, float saturationValue = 0, PlotColors? theme = null)
     {
         var minValue = data.Min();
         var maxValue = saturationValue > 0 ? saturationValue : data.Max();
@@ -88,23 +133,6 @@ public static class Painter
 
     // Internal
 
-    static KeyValuePair<double, Color>[] _defaultDiffTheme = [
-        new(-1, Colors.Blue),
-        //new(-0.3, Colors.Black),
-        new(0, Colors.White),
-        //new(0.3, Colors.Black),
-        new(1, Colors.Red),
-    ];
-
-    static KeyValuePair<double, Color>[] _defaultDmsTheme = [
-        new(0, Color.FromRgb(240, 240, 240)),    // white
-        new(0.03, Color.FromRgb(0, 208, 208)),   // cyan
-        new(0.2, Color.FromRgb(0, 176, 0)),      // green
-        new(0.4, Color.FromRgb(128, 190, 0)),    // brown
-        new(0.7, Color.FromRgb(128, 0, 0)),      // red
-        new(1, Color.FromRgb(216, 216, 216)),    // whitish
-    ];
-
     /// <summary>
     /// Plots a DMS measurement onto Canvas
     /// </summary>
@@ -115,7 +143,7 @@ public static class Painter
     /// <param name="range">Range of the dataset values</param>
     /// <param name="origin">The values to be subtracted from the dataset values</param>
     /// <param name="theme">Optional color theme</param>
-    private static void Draw(Canvas canvas, int rows, int cols, float[] data, float range, float origin, PlotColorTheme? theme = null)
+    private static void Draw(Canvas canvas, int rows, int cols, float[] data, float range, float origin, PlotColors? theme = null)
     {
         canvas.Children.Clear();
 
@@ -128,7 +156,7 @@ public static class Painter
         double cellWidth = Math.Ceiling(colSize);
         double cellHeight = Math.Ceiling(rowSize);
 
-        theme ??= new(_defaultDmsTheme);
+        theme ??= new(DmsThemes[0]);
 
         for (int y = 0; y < rows; y++)
         {
@@ -158,11 +186,11 @@ public static class Painter
     /// <param name="range">Range of the dataset values</param>
     /// <param name="origin">The values to be subtracted from the dataset values</param>
     /// <param name="theme">Optional color theme</param>
-    public static void Draw(Image image, int rows, int cols, float[] data, float range, float origin, PlotColorTheme? theme = null)
+    public static void Draw(Image image, int rows, int cols, float[] data, float range, float origin, PlotColors? theme = null)
     {
         image.Source = null;
 
-        theme ??= new(_defaultDmsTheme);
+        theme ??= new(DmsThemes[0]);
 
         byte[] pixels = new byte[cols * rows * 3];
 

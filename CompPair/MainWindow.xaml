@@ -45,6 +45,7 @@
         <StackPanel x:Name="stpTools" Grid.Row="0" Grid.RowSpan="3"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center"
+                    Width="220"
                     MouseDown="ToolPanel_MouseDown"
                     MouseUp="ToolPanel_MouseUp"
                     MouseMove="ToolPanel_MouseMove">
@@ -60,7 +61,9 @@
                     BorderThickness="3">
                 <local:Visualization x:Name="visVisOptions"
                                      AbsoluteScaleChanged="VisOptions_AbsoluteScaleChanged"
-                                     DiffScaleChanged="VisOptions_DiffScaleChanged"/>
+                                     DiffScaleChanged="VisOptions_DiffScaleChanged"
+                                     DmsThemeChanged="VisOptions_DmsThemeChanged"
+                                     DiffThemeChanged="VisOptions_DiffThemeChanged"/>
             </Border>
         </StackPanel>
     </Grid>

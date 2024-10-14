@@ -40,6 +40,22 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
             }
 
             lblDms.Content = string.Join(" | ", parts);
+
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDmsReady)));
+        }
+    }
+
+    public int ThemeIndex
+    {
+        get => _themeIndex;
+        set
+        {
+            if (_themeIndex != value)
+            {
+                _themeIndex = value;
+                _theme = new PlotColors(Painter.DmsThemes[_themeIndex]);
+                DisplayDms();
+            }
         }
     }
 
@@ -51,6 +67,11 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
         InitializeComponent();
         DataContext = this;
 
+        var settings = Properties.Settings.Default;
+        _themeIndex = settings.Vis_DmsTheme;
+
+        _theme = new PlotColors(Painter.DmsThemes[_themeIndex]);
+
         //RenderOptions.SetBitmapScalingMode(imgDms, BitmapScalingMode.NearestNeighbor);
         //RenderOptions.SetEdgeMode(imgDms, EdgeMode.Aliased);
     }
@@ -58,14 +79,15 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
     // Internal
 
     Dms? _dms = null;
-
     double _absoluteScale = 400;
+    int _themeIndex = 0;
+    PlotColors _theme;
 
     private void DisplayDms()
     {
         if (_dms != null)
         {
-            Painter.DrawPlot(imgDms, _dms.Height, _dms.Width, _dms.Data, (float)AbsoluteScale);
+            Painter.DrawPlot(imgDms, _dms.Height, _dms.Width, _dms.Data, (float)AbsoluteScale, _theme);
         }
     }
 

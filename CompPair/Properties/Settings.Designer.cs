@@ -118,5 +118,29 @@ namespace CompPair.Properties {
                 this["Vis_DiffScale"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int Vis_DmsTheme {
+            get {
+                return ((int)(this["Vis_DmsTheme"]));
+            }
+            set {
+                this["Vis_DmsTheme"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int Vis_DiffTheme {
+            get {
+                return ((int)(this["Vis_DiffTheme"]));
+            }
+            set {
+                this["Vis_DiffTheme"] = value;
+            }
+        }
     }
 }
