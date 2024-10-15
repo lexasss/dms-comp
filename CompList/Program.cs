@@ -15,16 +15,13 @@ namespace CompList;
 using DmsComparison;
 using DmsComparison.Algorithms;
 
-// The key is a mixture type (2-digit number),
-// and the value is a set of measurements of this mixture type
-using MixtureDatasets = KeyValuePair<string, HashSet<DmsComparison.Dms>>;
-
 class PairOfMixtures(string mix1, string mix2)
 {
     public string Id => $"{mix1}/{mix2}";
     public bool AreSame => mix1 == mix2;
     public override string ToString() => Id;
 }
+record MixtureDatasets(string MixType, HashSet<Dms> DmsSet);
 record ComparisonResult(PairOfMixtures Mixtures, double Mean, double Std, double[] Distances);
 record TestResult(Options Options, Algorithm Algorithm, ComparisonResult[] Comparisons);
 
@@ -48,12 +45,12 @@ public class Program
         if (files == null)
             return;
 
-        var mixDatasets = LoadData(files);
+        var datasets = LoadData(files);
 
         if (VERBOSE)
         {
             Console.WriteLine($"\nSets:");
-            foreach (var (mix, list) in mixDatasets)
+            foreach (var (mix, list) in datasets)
             {
                 Console.WriteLine($"  Mix: {mix}");
                 foreach (var dms in list)
@@ -66,7 +63,7 @@ public class Program
         var algorithms = LoadAlgorithms();
         var options = PermutateOptions();
 
-        var results = Run(options, algorithms, mixDatasets);
+        var results = Run(options, algorithms, datasets);
 
         var headers = results.First().Comparisons.Select(c => c.Mixtures).ToArray();
 
@@ -129,7 +126,7 @@ public class Program
                 Console.WriteLine($"Loading {file}");
         }
 
-        return result.ToArray();
+        return result.Select(kv => new MixtureDatasets(kv.Key, kv.Value)).ToArray();
     }
 
     private static Algorithm[] LoadAlgorithms()
@@ -173,7 +170,7 @@ public class Program
 
         var results = new List<ComparisonResult>();
 
-        var mixTypes = allMixDatasets.Select(kv => kv.Key);
+        var mixTypes = allMixDatasets.Select(md => md.MixType);
         for (int m = 0; m < mixTypes.Count(); m++)
         {
             for (int n = m; n < mixTypes.Count(); n++)
@@ -188,8 +185,8 @@ public class Program
                 int distanceCount = 0;
                 var distances = new List<double>();
 
-                var dmsSet1 = allMixDatasets.First(kv => kv.Key == mixType1).Value.ToArray();
-                var dmsSet2 = allMixDatasets.First(kv => kv.Key == mixType2).Value.ToArray();
+                var dmsSet1 = allMixDatasets.First(md => md.MixType == mixType1).DmsSet.ToArray();
+                var dmsSet2 = allMixDatasets.First(md => md.MixType == mixType2).DmsSet.ToArray();
 
                 for (int i = 0; i < dmsSet1.Length; i++)
                 {
