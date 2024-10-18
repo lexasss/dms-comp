@@ -8,12 +8,18 @@
  * 
  * The scripts outputs 3 tables into console: mean, std and the analysis of anomalies.
  * Each table should be copied to the Excel sheet.
+ * It also copies an Excel template to the data root folder where "filter-on" and "filter-off" folders are located,
+ * and fills the corresponding Excel sheet with the output values.
  */
 
 namespace CompList;
 
 using DmsComparison;
 using DmsComparison.Algorithms;
+using System;
+using System.Data;
+using System.Data.OleDb;
+using System.Diagnostics;
 
 class PairOfMixtures(string mix1, string mix2)
 {
@@ -39,11 +45,15 @@ public class Program
     const int COLSIZE_COND = 20;
     const int COLSIZE_DIST = 9;
 
+    const string EXCEL_FILENAME = "analysis.xlsx";
+
     public static void Main()
     {
-        var files = SelectFolder();
-        if (files == null)
+        var (folder, files) = SelectFolder();
+        if (folder == null || files == null)
             return;
+
+        var (excelFileName, sheetName) = CreateExcelFile(folder);
 
         var datasets = LoadData(files);
 
@@ -67,22 +77,72 @@ public class Program
 
         var headers = results.First().Comparisons.Select(c => c.Mixtures).ToArray();
 
-        /*
-        PrintHeader(headers, ["Options", "Algorithm"]);
-        PrintByOption(results, PrintTarget.Mean);
-        PrintByOption(results, PrintTarget.Std);
-        */
+        //PrintHeader(headers, ["Options", "Algorithm"]);
+        //PrintByOption(results, PrintTarget.Mean);
+        //PrintByOption(results, PrintTarget.Std);
+
+        string connectionSetup = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={excelFileName};Extended Properties=""Excel 12.0 Xml;HDR=NO"";";
+        using var excel = new OleDbConnection(connectionSetup);
+        excel.Open();
+
+        EnsureExcelSheetExists(excel, sheetName);
 
         PrintHeader(headers, ["Algorithms", "Options"]);
-        PrintByAlgorithm(results, PrintTarget.Mean);
-        PrintByAlgorithm(results, PrintTarget.Std);
+        PrintByAlgorithm(results, PrintTarget.Mean, excel, sheetName);
+        PrintByAlgorithm(results, PrintTarget.Std, excel, sheetName);
 
-        PrintExceptionStats(results);
+        PrintExceptionStats(results, excel, sheetName);
+
+        excel.Close();
     }
 
     // Preparion methods
 
-    private static string[]? SelectFolder()
+    private static (string, string) CreateExcelFile(string folder)
+    {
+        var path = folder.Split(Path.DirectorySeparatorChar);
+        var excelFileNameAtDataLocation = string.Join(Path.DirectorySeparatorChar, [.. path[0..^1], EXCEL_FILENAME]);
+
+        if (!File.Exists(excelFileNameAtDataLocation))
+        {
+            File.Copy(EXCEL_FILENAME, excelFileNameAtDataLocation);
+        }
+
+        Process.Start("explorer", "\"" + excelFileNameAtDataLocation + "\"");
+
+        var sheetName = path[^1];
+
+        return (excelFileNameAtDataLocation, sheetName);
+    }
+
+    private static bool EnsureExcelSheetExists(OleDbConnection excel, string sheetName)
+    {
+        var sheets = excel.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, new object[] { null, null, null, "TABLE" });
+        if (sheets == null)
+            return false;
+
+        bool exists = false;
+        foreach (DataRow row in sheets.Rows)
+        {
+            var tableName = row["TABLE_NAME"].ToString()?.Trim('\'', '$');
+            if (tableName == sheetName)
+            {
+                exists = true;
+                break;
+            }
+        }
+
+        if (!exists)
+        {
+            var command = excel.CreateCommand();
+            command.CommandText = $"CREATE TABLE {sheetName}";
+            command.ExecuteNonQuery();
+        }
+
+        return exists;
+    }
+
+    private static (string?, string[]?) SelectFolder()
     {
         var ofd = new OpenFolder.FolderPicker
         {
@@ -92,7 +152,7 @@ public class Program
         };
         if (ofd.ShowDialog() == false || string.IsNullOrEmpty(ofd.ResultPath))
         {
-            return null;
+            return (null, null);
         }
 
         var folder = ofd.ResultPath;
@@ -101,7 +161,7 @@ public class Program
         Console.WriteLine($"DMS source folder: {folder}");
         Console.WriteLine($"DMS files: {files.Count()}");
 
-        return files.ToArray();
+        return (folder, files.ToArray());
     }
 
     private static MixtureDatasets[] LoadData(string[] files)
@@ -137,7 +197,7 @@ public class Program
         {
             if (Activator.CreateInstance(algorithmType) is Algorithm algorithm)
             {
-                if (!algorithm.IsVisible || (DEBUG && algorithm.Name == "DTW"))
+                if (!algorithm.IsVisible || (DEBUG && algorithm.Name != "Canberra"))
                     continue;
                 result.Add(algorithm);
             }
@@ -236,6 +296,22 @@ public class Program
             }
         }
 
+
+        results.Sort((a, b) =>
+        {
+            int result = a.Algorithm.Name.CompareTo(b.Algorithm.Name);
+            if (result != 0)
+                return result;
+            result = a.Options.Crop.CompareTo(b.Options.Crop);
+            if (result != 0)
+                return result;
+            result = a.Options.NormalizationType.CompareTo(b.Options.NormalizationType);
+            if (result != 0)
+                return result;
+            result = a.Options.UseRectification.CompareTo(b.Options.UseRectification);
+            return result;
+        });
+
         return results.ToArray();
     }
 
@@ -256,10 +332,14 @@ public class Program
             Console.Write($"{mixPair,-COLSIZE_DIST}");
         }
         Console.WriteLine();
+
+
     }
 
-    private static void PrintByAlgorithm(TestResult[] results, PrintTarget target)
+    private static void PrintByAlgorithm(TestResult[] results, PrintTarget target, OleDbConnection? excel, string sheet)
     {
+        int excelRow = 4;
+
         var list = new Dictionary<Algorithm, List<string>>();
         foreach (var testResult in results)
         {
@@ -272,14 +352,38 @@ public class Program
             string s = $"{testResult.Algorithm.Name,-COLSIZE_COND}";
             s += $"{testResult.Options,-COLSIZE_COND}";
 
+            var excelCells = "";
             if (target == PrintTarget.Mean)
+                excelCells = $"A{excelRow}:H{excelRow}";
+            else if (target == PrintTarget.Std)
+                excelCells = $"M{excelRow}:T{excelRow}";
+
+            var command = new OleDbCommand($"UPDATE [{sheet}${excelCells}] SET F1=@alg, F2=@opt, F3=@d1, F4=@d2, F5=@d3, F6=@d4, F7=@d5, F8=@d6", excel);
+            command.Parameters.AddWithValue("@alg", testResult.Algorithm.Name).OleDbType = OleDbType.Char;
+            command.Parameters.AddWithValue("@opt", testResult.Options.ToString()).OleDbType = OleDbType.Char;
+
+            var index = 1;
+            if (target == PrintTarget.Mean)
+            {
                 foreach (var comparison in testResult.Comparisons)
+                {
                     s += $"{comparison.Mean,-COLSIZE_DIST:F5}";
-            else
+                    command.Parameters.AddWithValue($"@d{index++}", (float)comparison.Mean).OleDbType = OleDbType.Decimal;
+                }
+            }
+            else if (target == PrintTarget.Std)
+            {
                 foreach (var comparison in testResult.Comparisons)
+                {
                     s += $"{comparison.Std,-COLSIZE_DIST:F5}";
+                    command.Parameters.AddWithValue($"@d{index++}", (float)comparison.Std).OleDbType = OleDbType.Decimal;
+                }
+            }
 
             items.Add(s);
+
+            command.ExecuteNonQuery();
+            excelRow++;
         }
 
         Console.WriteLine(target);
@@ -288,8 +392,10 @@ public class Program
                 Console.WriteLine(line);
     }
 
-    private static void PrintByOption(TestResult[] results, PrintTarget target)
+    private static void PrintByOption(TestResult[] results, PrintTarget target, OleDbConnection? excel, string sheet)
     {
+        int excelRow = 4;
+
         var list = new Dictionary<Options, List<string>>();
         foreach (var testResult in results)
         {
@@ -302,14 +408,38 @@ public class Program
             string s = $"{testResult.Options,-COLSIZE_COND}";
             s += $"{testResult.Algorithm.Name,-COLSIZE_COND}";
 
+            var excelCells = "";
             if (target == PrintTarget.Mean)
+                excelCells = $"A{excelRow}:H{excelRow}";
+            else if (target == PrintTarget.Std)
+                excelCells = $"M{excelRow}:T{excelRow}";
+
+            var command = new OleDbCommand($"UPDATE [{sheet}${excelCells}] SET F1=@alg, F2=@opt, F3=@d1, F4=@d2, F5=@d3, F6=@d4, F7=@d5, F8=@d6", excel);
+            command.Parameters.AddWithValue("@alg", testResult.Algorithm.Name).OleDbType = OleDbType.Char;
+            command.Parameters.AddWithValue("@opt", testResult.Options.ToString()).OleDbType = OleDbType.Char;
+
+            var index = 1;
+            if (target == PrintTarget.Mean)
+            {
                 foreach (var comparison in testResult.Comparisons)
+                {
                     s += $"{comparison.Mean,-COLSIZE_DIST:F5}";
-            else
+                    command.Parameters.AddWithValue($"@d{index++}", comparison.Mean).OleDbType = OleDbType.Decimal;
+                }
+            }
+            else if (target == PrintTarget.Std)
+            {
                 foreach (var comparison in testResult.Comparisons)
+                {
                     s += $"{comparison.Std,-COLSIZE_DIST:F5}";
+                    command.Parameters.AddWithValue($"@d{index++}", comparison.Std).OleDbType = OleDbType.Decimal;
+                }
+            }
 
             items.Add(s);
+
+            command.ExecuteNonQuery();
+            excelRow++;
         }
 
         Console.WriteLine(target);
@@ -318,26 +448,13 @@ public class Program
                 Console.WriteLine(line);
     }
 
-    private static void PrintExceptionStats(TestResult[] results)
+    private static void PrintExceptionStats(TestResult[] results, OleDbConnection? excel, string sheet)
     {
         Console.WriteLine();
         Console.WriteLine("Exception analysis");
 
-        Array.Sort(results, (a, b) =>
-        {
-            int result = a.Algorithm.Name.CompareTo(b.Algorithm.Name);
-            if (result != 0)
-                return result;
-            result = a.Options.Crop.CompareTo(b.Options.Crop);
-            if (result != 0)
-                return result;
-            result = a.Options.NormalizationType.CompareTo(b.Options.NormalizationType);
-            if (result != 0)
-                return result;
-            result = a.Options.UseRectification.CompareTo(b.Options.UseRectification);
-            return result;
-        });
-        
+        int excelRow = 4;
+
         var list = new List<string>();
 
         foreach (var testResult in results)
@@ -366,6 +483,16 @@ public class Program
             var (threshold, successRate) = EstimateThreshold(sameMixtures.ToArray(), diffMixtures.ToArray());
             string s = $"{testResult.Algorithm.Name,-COLSIZE_COND} {testResult.Options,-COLSIZE_COND} {oddPerc,-COLSIZE_DIST:F2} {minDistance,-COLSIZE_DIST:F5} {threshold,-COLSIZE_DIST:F5} {successRate,-COLSIZE_DIST:F5}";
             list.Add(s);
+
+            var command = new OleDbCommand($"UPDATE [{sheet}$X{excelRow}:AC{excelRow}] SET F1=@alg, F2=@opt, F3=@d1, F4=@d2, F5=@d3, F6=@d4", excel);
+            command.Parameters.AddWithValue("@alg", testResult.Algorithm.Name).OleDbType = OleDbType.Char;
+            command.Parameters.AddWithValue("@opt", testResult.Options.ToString()).OleDbType = OleDbType.Char;
+            command.Parameters.AddWithValue("@d1", oddPerc).OleDbType = OleDbType.Decimal;
+            command.Parameters.AddWithValue("@d2", minDistance).OleDbType = OleDbType.Decimal;
+            command.Parameters.AddWithValue("@d3", threshold).OleDbType = OleDbType.Decimal;
+            command.Parameters.AddWithValue("@d4", successRate).OleDbType = OleDbType.Decimal;
+            command.ExecuteNonQuery();
+            excelRow++;
         }
 
         foreach (var item in list)
