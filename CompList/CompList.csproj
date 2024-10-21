@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.104.1" />
     <PackageReference Include="com.tarekfadel.open_folder_library" Version="1.0.1" />
     <PackageReference Include="System.Data.OleDb" Version="8.0.0" />
   </ItemGroup>

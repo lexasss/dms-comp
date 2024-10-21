@@ -16,11 +16,8 @@ namespace CompList;
 
 using DmsComparison;
 using DmsComparison.Algorithms;
-//using DocumentFormat.OpenXml.Packaging;
-//using DocumentFormat.OpenXml.Spreadsheet;
 using System;
-using System.Data;
-using System.Data.OleDb;
+using ClosedXML.Excel;
 
 class PairOfMixtures(string mix1, string mix2)
 {
@@ -41,13 +38,12 @@ enum PrintTarget
 public class Program
 {
     static bool VERBOSE => false;
-    static bool DEBUG => true;
+    static bool DEBUG => false;
 
     const int COLSIZE_COND = 20;
     const int COLSIZE_DIST = 9;
 
-    static bool OUTPUT_TO_EXCEL => false;
-    static bool USE_OLE_EXCEL => true;
+    static bool OUTPUT_TO_EXCEL => true;
     const string EXCEL_FILENAME = "analysis.xlsx";
     const int EXCEL_FIRST_ROW = 4;
 
@@ -91,36 +87,30 @@ public class Program
         //PrintByOption(results, PrintTarget.Mean);
         //PrintByOption(results, PrintTarget.Std);
 
-        OleDbConnection? excel = null;
-        //SpreadsheetDocument? excel2 = null;
+        PrintHeader(headers, ["Algorithms", "Options"]);
+        PrintByAlgorithm(results, PrintTarget.Mean);
+        PrintByAlgorithm(results, PrintTarget.Std);
+        PrintExceptionStats(results);
 
         if (OUTPUT_TO_EXCEL)
         {
-            if (USE_OLE_EXCEL)
+            try
             {
-                string connectionSetup = $@"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={excelFileName};Extended Properties=""Excel 12.0 Xml;HDR=NO"";";
-                excel = new OleDbConnection(connectionSetup);
-                excel.Open();
+                var excel = new XLWorkbook(excelFileName);
+                var excelSheet = EnsureExcelSheetExists(excel, sheetName);
 
-                EnsureExcelSheetExists(excel, sheetName);
+                if (excelSheet != null)
+                {
+                    PrintByAlgorithm(results, PrintTarget.Mean, excelSheet);
+                    PrintByAlgorithm(results, PrintTarget.Std, excelSheet);
+                    PrintExceptionStats(results, excelSheet);
+                }
+
+                excel.Save();
+                excel.Dispose();
             }
-            else
-            {
-                /*
-                excel2 = SpreadsheetDocument.Open(excelFileName ?? "", true);
-                var sheet = GetSheet(excel2, sheetName);
-                excel2.Close();
-                */
-            }
+            catch { }
         }
-
-        PrintHeader(headers, ["Algorithms", "Options"]);
-        PrintByAlgorithm(results, PrintTarget.Mean, excel, sheetName);
-        PrintByAlgorithm(results, PrintTarget.Std, excel, sheetName);
-
-        PrintExceptionStats(results, excel, sheetName);
-
-        excel?.Close();
     }
 
     // Preparion methods
@@ -135,99 +125,28 @@ public class Program
             File.Copy(EXCEL_FILENAME, excelFileNameAtDataLocation);
         }
 
-        //Process.Start("explorer", "\"" + excelFileNameAtDataLocation + "\"");
-
         var sheetName = path[^1];
 
         return (excelFileNameAtDataLocation, sheetName);
     }
 
-    /// <summary>
-    /// Suppose to create a new sheet it does not exist, but currently DOES NOT WORK
-    /// </summary>
-    /// <param name="excel">Excel document</param>
-    /// <param name="sheetName">sheet name to check, and also to create if it does not exits</param>
-    /// <returns>True if the sheet was in the Excel document already</returns>
-    private static bool EnsureExcelSheetExists(OleDbConnection excel, string sheetName)
-    {
-        var sheets = excel.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, new object[] { null, null, null, "TABLE" });
-        if (sheets == null)
-            return false;
-
-        bool exists = false;
-        foreach (DataRow row in sheets.Rows)
-        {
-            var tableName = row["TABLE_NAME"].ToString()?.Trim('\'', '$');
-            if (tableName == sheetName)
-            {
-                exists = true;
-                break;
-            }
-        }
-
-        if (!exists)
-        {
-            var command = excel.CreateCommand();
-            command.CommandText = $"CREATE TABLE {sheetName}";
-            command.ExecuteNonQuery();
-        }
-
-        return exists;
-    }
-
-    /*
-    private static SheetData? GetSheet(SpreadsheetDocument? excel, string sheetName)
+    private static IXLWorksheet? EnsureExcelSheetExists(XLWorkbook? excel, string sheetName)
     {
         if (excel == null)
             return null;
 
-        Sheets? sheets = excel.WorkbookPart?.Workbook.GetFirstChild<Sheets>();
-        if (sheets == null)
-            return null;
-
-        SheetData? result = null;
-        foreach (Sheet sheet in sheets)
+        IXLWorksheet? sheet;
+        try
         {
-            var tableName = sheet.Name?.Value ?? "";
-            if (tableName == sheetName)
-            {
-                var wsps = excel.WorkbookPart.WorksheetParts;
-                foreach (var wsp in wsps)
-                {
-                    var s = wsp.Worksheet.ChildElements.FirstOrDefault(el => el is SheetData) as SheetData;
-                    if (s != null)
-                    {
-                        result = s;
-                        break;
-                    }
-                }
-                break;
-            }
+            sheet = excel.Worksheet(sheetName);
+        }
+        catch
+        {
+            sheet = excel.AddWorksheet(sheetName);
         }
 
-        if (result == null)
-        {
-            WorksheetPart? newWorksheetPart = excel.WorkbookPart?.AddNewPart<WorksheetPart>();
-            if (newWorksheetPart != null)
-            {
-                result = new SheetData();
-                newWorksheetPart.Worksheet = new Worksheet(result);
-
-                string relationshipId = excel.WorkbookPart?.GetIdOfPart(newWorksheetPart) ?? "";
-
-                uint sheetId = 1;
-                if (sheets.Elements<Sheet>().Count() > 0)
-                {
-                    sheetId = sheets.Elements<Sheet>().Select(s => s.SheetId?.Value ?? 0).Max() + 1;
-                }
-
-                Sheet sheet = new Sheet() { Id = relationshipId, SheetId = sheetId, Name = sheetName };
-                sheets.Append(sheet);
-            }
-        }
-
-        return result;
-    }*/
+        return sheet;
+    }
 
     private static (string?, string[]?) SelectFolder()
     {
@@ -423,10 +342,8 @@ public class Program
 
     }
 
-    private static void PrintByAlgorithm(TestResult[] results, PrintTarget target, OleDbConnection? excel, string? sheet)
+    private static void PrintByAlgorithm(TestResult[] results, PrintTarget target)
     {
-        int excelRow = EXCEL_FIRST_ROW;
-
         var list = new Dictionary<Algorithm, List<string>>();
         foreach (var testResult in results)
         {
@@ -439,28 +356,11 @@ public class Program
             string s = $"{testResult.Algorithm.Name,-COLSIZE_COND}";
             s += $"{testResult.Options,-COLSIZE_COND}";
 
-            OleDbCommand? excelCommand = null;
-            if (excel != null)
-            {
-                var excelCells = "";
-                if (target == PrintTarget.Mean)
-                    excelCells = $"A{excelRow}:H{excelRow}";
-                else if (target == PrintTarget.Std)
-                    excelCells = $"M{excelRow}:T{excelRow}";
-
-                excelCommand = new OleDbCommand($"UPDATE [{sheet}${excelCells}] SET F1=@alg, F2=@opt, F3=@d1, F4=@d2, F5=@d3, F6=@d4, F7=@d5, F8=@d6", excel);
-                excelCommand.Parameters.AddWithValue("@alg", testResult.Algorithm.Name).OleDbType = OleDbType.Char;
-                excelCommand.Parameters.AddWithValue("@opt", testResult.Options.ToString()).OleDbType = OleDbType.Char;
-            }
-
-            var index = 1;
             if (target == PrintTarget.Mean)
             {
                 foreach (var comparison in testResult.Comparisons)
                 {
                     s += $"{comparison.Mean,-COLSIZE_DIST:F5}";
-                    if (excelCommand != null)
-                        excelCommand.Parameters.AddWithValue($"@d{index++}", (float)comparison.Mean).OleDbType = OleDbType.Decimal;
                 }
             }
             else if (target == PrintTarget.Std)
@@ -468,18 +368,10 @@ public class Program
                 foreach (var comparison in testResult.Comparisons)
                 {
                     s += $"{comparison.Std,-COLSIZE_DIST:F5}";
-                    if (excelCommand != null)
-                        excelCommand.Parameters.AddWithValue($"@d{index++}", (float)comparison.Std).OleDbType = OleDbType.Decimal;
                 }
             }
 
             items.Add(s);
-
-            if (excelCommand != null)
-            {
-                excelCommand.ExecuteNonQuery();
-                excelRow++;
-            }
         }
 
         Console.WriteLine(target);
@@ -488,10 +380,42 @@ public class Program
                 Console.WriteLine(line);
     }
 
-    private static void PrintByOption(TestResult[] results, PrintTarget target, OleDbConnection? excel, string sheet)
+    private static void PrintByAlgorithm(TestResult[] results, PrintTarget target, IXLWorksheet sheet)
     {
         int excelRow = EXCEL_FIRST_ROW;
 
+        foreach (var testResult in results)
+        {
+            var excelColumn = 1;
+            if (target == PrintTarget.Mean)
+                excelColumn = 1;
+            else if (target == PrintTarget.Std)
+                excelColumn = 13;
+
+            sheet.Cell(excelRow, excelColumn++).Value = testResult.Algorithm.Name;
+            sheet.Cell(excelRow, excelColumn++).Value = testResult.Options.ToString();
+
+            if (target == PrintTarget.Mean)
+            {
+                foreach (var comparison in testResult.Comparisons)
+                {
+                    sheet.Cell(excelRow, excelColumn++).Value = (float)comparison.Mean;
+                }
+            }
+            else if (target == PrintTarget.Std)
+            {
+                foreach (var comparison in testResult.Comparisons)
+                {
+                    sheet.Cell(excelRow, excelColumn++).Value = (float)comparison.Std;
+                }
+            }
+
+            excelRow++;
+        }
+    }
+
+    private static void PrintByOption(TestResult[] results, PrintTarget target)
+    {
         var list = new Dictionary<Options, List<string>>();
         foreach (var testResult in results)
         {
@@ -504,28 +428,11 @@ public class Program
             string s = $"{testResult.Options,-COLSIZE_COND}";
             s += $"{testResult.Algorithm.Name,-COLSIZE_COND}";
 
-            OleDbCommand? excelCommand = null;
-            if (excel != null)
-            {
-                var excelCells = "";
-                if (target == PrintTarget.Mean)
-                    excelCells = $"A{excelRow}:H{excelRow}";
-                else if (target == PrintTarget.Std)
-                    excelCells = $"M{excelRow}:T{excelRow}";
-
-                excelCommand = new OleDbCommand($"UPDATE [{sheet}${excelCells}] SET F1=@alg, F2=@opt, F3=@d1, F4=@d2, F5=@d3, F6=@d4, F7=@d5, F8=@d6", excel);
-                excelCommand.Parameters.AddWithValue("@alg", testResult.Algorithm.Name).OleDbType = OleDbType.Char;
-                excelCommand.Parameters.AddWithValue("@opt", testResult.Options.ToString()).OleDbType = OleDbType.Char;
-            }
-
-            var index = 1;
             if (target == PrintTarget.Mean)
             {
                 foreach (var comparison in testResult.Comparisons)
                 {
                     s += $"{comparison.Mean,-COLSIZE_DIST:F5}";
-                    if (excelCommand != null)
-                        excelCommand.Parameters.AddWithValue($"@d{index++}", comparison.Mean).OleDbType = OleDbType.Decimal;
                 }
             }
             else if (target == PrintTarget.Std)
@@ -533,18 +440,10 @@ public class Program
                 foreach (var comparison in testResult.Comparisons)
                 {
                     s += $"{comparison.Std,-COLSIZE_DIST:F5}";
-                    if (excelCommand != null)
-                        excelCommand.Parameters.AddWithValue($"@d{index++}", comparison.Std).OleDbType = OleDbType.Decimal;
                 }
             }
 
             items.Add(s);
-
-            if (excelCommand != null)
-            {
-                excelCommand.ExecuteNonQuery();
-                excelRow++;
-            }
         }
 
         Console.WriteLine(target);
@@ -553,12 +452,44 @@ public class Program
                 Console.WriteLine(line);
     }
 
-    private static void PrintExceptionStats(TestResult[] results, OleDbConnection? excel, string sheet)
+    private static void PrintByOption(TestResult[] results, PrintTarget target, IXLWorksheet sheet)
+    {
+        int excelRow = EXCEL_FIRST_ROW;
+
+        foreach (var testResult in results)
+        {
+            var excelColumn = 1;
+            if (target == PrintTarget.Mean)
+                excelColumn = 1;
+            else if (target == PrintTarget.Std)
+                excelColumn = 13;
+
+            sheet.Cell(excelRow, excelColumn++).Value = testResult.Algorithm.Name;
+            sheet.Cell(excelRow, excelColumn++).Value = testResult.Options.ToString();
+
+            if (target == PrintTarget.Mean)
+            {
+                foreach (var comparison in testResult.Comparisons)
+                {
+                    sheet.Cell(excelRow, excelColumn++).Value = (float)comparison.Mean;
+                }
+            }
+            else if (target == PrintTarget.Std)
+            {
+                foreach (var comparison in testResult.Comparisons)
+                {
+                    sheet.Cell(excelRow, excelColumn++).Value = (float)comparison.Std;
+                }
+            }
+
+            excelRow++;
+        }
+    }
+
+    private static void PrintExceptionStats(TestResult[] results)
     {
         Console.WriteLine();
         Console.WriteLine("Exception analysis");
-
-        int excelRow = EXCEL_FIRST_ROW;
 
         var list = new List<string>();
 
@@ -588,23 +519,51 @@ public class Program
             var (threshold, successRate) = EstimateThreshold(sameMixtures.ToArray(), diffMixtures.ToArray());
             string s = $"{testResult.Algorithm.Name,-COLSIZE_COND} {testResult.Options,-COLSIZE_COND} {oddPerc,-COLSIZE_DIST:F2} {minDistance,-COLSIZE_DIST:F5} {threshold,-COLSIZE_DIST:F5} {successRate,-COLSIZE_DIST:F5}";
             list.Add(s);
-
-            if (excel != null)
-            {
-                var command = new OleDbCommand($"UPDATE [{sheet}$X{excelRow}:AC{excelRow}] SET F1=@alg, F2=@opt, F3=@d1, F4=@d2, F5=@d3, F6=@d4", excel);
-                command.Parameters.AddWithValue("@alg", testResult.Algorithm.Name).OleDbType = OleDbType.Char;
-                command.Parameters.AddWithValue("@opt", testResult.Options.ToString()).OleDbType = OleDbType.Char;
-                command.Parameters.AddWithValue("@d1", oddPerc).OleDbType = OleDbType.Decimal;
-                command.Parameters.AddWithValue("@d2", minDistance).OleDbType = OleDbType.Decimal;
-                command.Parameters.AddWithValue("@d3", threshold).OleDbType = OleDbType.Decimal;
-                command.Parameters.AddWithValue("@d4", successRate).OleDbType = OleDbType.Decimal;
-                command.ExecuteNonQuery();
-                excelRow++;
-            }
         }
 
         foreach (var item in list)
             Console.WriteLine(item);
+    }
+
+    private static void PrintExceptionStats(TestResult[] results, IXLWorksheet sheet)
+    {
+        int excelRow = EXCEL_FIRST_ROW;
+
+        foreach (var testResult in results)
+        {
+            var sameMixtures = testResult.Comparisons.Where(cmps => cmps.Mixtures.AreSame);
+            var diffMixtures = testResult.Comparisons.Where(cmps => !cmps.Mixtures.AreSame);
+
+            int totalCount = 0;
+            int count = 0;
+            double minDistance = double.MaxValue;
+
+            foreach (var sameMixResult in sameMixtures)
+                foreach (var diffMixResult in diffMixtures)
+                    foreach (var smrDist in sameMixResult.Distances)
+                        foreach (var dmrDist in diffMixResult.Distances)
+                        {
+                            totalCount++;
+                            var dist = dmrDist - smrDist;
+                            if (minDistance > dist)
+                                minDistance = dist;
+                            if (dmrDist <= smrDist)
+                                count++;
+                        }
+
+            var oddPerc = 100.0 * count / totalCount;
+            var (threshold, successRate) = EstimateThreshold(sameMixtures.ToArray(), diffMixtures.ToArray());
+
+            int excelColumn = 24;
+            sheet.Cell(excelRow, excelColumn++).Value = testResult.Algorithm.Name;
+            sheet.Cell(excelRow, excelColumn++).Value = testResult.Options.ToString();
+            sheet.Cell(excelRow, excelColumn++).Value = oddPerc;
+            sheet.Cell(excelRow, excelColumn++).Value = minDistance;
+            sheet.Cell(excelRow, excelColumn++).Value = threshold;
+            sheet.Cell(excelRow, excelColumn++).Value = successRate;
+
+            excelRow++;
+        }
     }
 
     /// <returns>threshold and average share of the values that stay within the threshold
