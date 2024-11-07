@@ -76,6 +76,16 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
         //RenderOptions.SetEdgeMode(imgDms, EdgeMode.Aliased);
     }
 
+    public bool CopyToMemory()
+    {
+        if (imgDms.Source is System.Windows.Media.Imaging.BitmapSource bmp)
+        {
+            System.Windows.Clipboard.SetImage(bmp);
+            return true;
+        }
+        return false;
+    }
+
     // Internal
 
     Dms? _dms = null;

@@ -1,5 +1,4 @@
-﻿using CompPair.Properties;
-using DmsComparison;
+﻿using DmsComparison;
 using System.Windows;
 using System.Windows.Input;
 
@@ -47,6 +46,18 @@ public partial class MainWindow : Window
             MessageBox.Show("DMS data have distinct number of rows or colunms and therefore their difference cannot be displayed.",
                 "DMS loader", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    private void FlickerElement(FrameworkElement el, int durationMs)
+    {
+        var visibility = el.Visibility;
+        el.Visibility = Visibility.Visible;
+
+        Task.Run(async () =>
+        {
+            await Task.Delay(durationMs);
+            Dispatcher.Invoke(() => lblDms2Copied.Visibility = visibility);
+        });
     }
 
     // UI events
@@ -141,5 +152,21 @@ public partial class MainWindow : Window
         _diffThemeIndex = e;
         _diffTheme = new PlotColors(Painter.DiffThemes[_diffThemeIndex]);
         DisplayDmsDiff(dmsPlot1.Dms, dmsPlot2.Dms);
+    }
+
+    private void Dms1CopyButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (dmsPlot1.CopyToMemory())
+        {
+            FlickerElement(lblDms1Copied, 2000);
+        }
+    }
+
+    private void Dms2CopyButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (dmsPlot2.CopyToMemory())
+        {
+            FlickerElement(lblDms2Copied, 2000);
+        }
     }
 }

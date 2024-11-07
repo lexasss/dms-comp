@@ -10,6 +10,25 @@
         MouseMove="Window_MouseMove"
         Closed="Window_Closed">
 
+    <Window.Resources>
+        <Style x:Key="copy" TargetType="Button">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="FontSize" Value="20"/>
+            <Setter Property="Padding" Value="2,0,0,0"/>
+            <Setter Property="Foreground" Value="Gray"/>
+        </Style>
+
+        <ControlTemplate x:Key="copySign" TargetType="ContentControl">
+            <Grid>
+                <TextBlock Margin="-2,-2,0,0" Foreground="White">▮</TextBlock>
+                <TextBlock Margin="-2,-2,0,0">▯</TextBlock>
+                <TextBlock Margin="2,2,0,0" Foreground="White">▮</TextBlock>
+                <TextBlock Margin="2,2,0,0" >▯</TextBlock>
+            </Grid>
+        </ControlTemplate>
+    </Window.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
@@ -18,6 +37,19 @@
         </Grid.RowDefinitions>
         <local:DmsPlot x:Name="dmsPlot1" Grid.Row="0"
                        DmsLoaded="DmsPlot_DmsLoaded"/>
+        <WrapPanel Grid.Row="0"
+                   VerticalAlignment="Bottom"
+                   HorizontalAlignment="Left">
+            <Button Style="{StaticResource copy}"
+                    IsEnabled="{Binding IsDmsReady, ElementName=dmsPlot1, Mode=OneWay}"
+                    Click="Dms1CopyButton_Click">
+                <ContentControl Template="{StaticResource copySign}"/>
+            </Button>
+            <Label x:Name="lblDms1Copied"
+                   VerticalAlignment="Center"
+                   Visibility="Hidden"
+                   Content="Copied"/>
+        </WrapPanel>
 
         <Label Grid.Row="1"
                Content="Click to select two DMS measurement files"
@@ -41,6 +73,20 @@
 
         <local:DmsPlot x:Name="dmsPlot2" Grid.Row="2"
                        DmsLoaded="DmsPlot_DmsLoaded"/>
+        <WrapPanel Grid.Row="2"
+                   VerticalAlignment="Bottom"
+                   HorizontalAlignment="Left">
+            <Button Grid.Row="2"
+                    Style="{StaticResource copy}"
+                    IsEnabled="{Binding IsDmsReady, ElementName=dmsPlot2, Mode=OneWay}"
+                    Click="Dms2CopyButton_Click">
+                <ContentControl Template="{StaticResource copySign}"/>
+            </Button>
+            <Label x:Name="lblDms2Copied"
+                   VerticalAlignment="Center"
+                   Visibility="Hidden"
+                   Content="Copied"/>
+        </WrapPanel>
 
         <StackPanel x:Name="stpTools" Grid.Row="0" Grid.RowSpan="3"
                     HorizontalAlignment="Right"
