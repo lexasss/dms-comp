@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace CompPair;
+namespace DmsComparison;
 
 public partial class App : Application
 {

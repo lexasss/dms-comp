@@ -1,9 +1,8 @@
-﻿using DmsComparison;
-using DmsComparison.Algorithms;
+﻿using DmsComparison.Algorithms;
 using System.ComponentModel;
 using System.Windows.Controls;
 
-namespace CompPair;
+namespace DmsComparison;
 
 public partial class Distance : UserControl, INotifyPropertyChanged
 {

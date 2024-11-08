@@ -1,8 +1,7 @@
-﻿using DmsComparison;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
 
-namespace CompPair;
+namespace DmsComparison;
 
 public partial class MainWindow : Window
 {

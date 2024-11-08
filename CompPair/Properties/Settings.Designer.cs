@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace CompPair.Properties {
+namespace DmsComparison.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

@@ -1,9 +1,8 @@
-﻿using DmsComparison;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace CompPair;
+namespace DmsComparison;
 
 public partial class DmsPlot : UserControl, INotifyPropertyChanged
 {

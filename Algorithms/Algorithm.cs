@@ -1,4 +1,6 @@
-﻿namespace DmsComparison.Algorithms;
+﻿using DmsComparison.Common;
+
+namespace DmsComparison.Algorithms;
 
 public record Size(int Width, int Height);
 
@@ -64,7 +66,7 @@ public abstract class Algorithm
 
     private static float[] Rectify(float[] data)
     {
-        var median = GetMedian(data);
+        var median = data.Median();
         //System.Diagnostics.Debug.WriteLine($"[DIST] Median: {median:F6}");
 
         // Remove median
@@ -80,7 +82,7 @@ public abstract class Algorithm
         {
             t[i] = Math.Abs(t[i]);
         }
-        var medianDeviation = RectifiedMedianFactor * GetMedian(t);
+        var medianDeviation = RectifiedMedianFactor * t.Median();
         //System.Diagnostics.Debug.WriteLine($"[DIST] Median deviation: {medianDeviation:F6}");
 
         // Subtract median deviation: anything within the median deviation range becomes 0
@@ -158,19 +160,5 @@ public abstract class Algorithm
                 result[i * width + j] = data[row * size.Width + col];
 
         return result;
-    }
-
-    private static float GetMedian(float[] data)
-    {
-        if (data == null || data.Length == 0)
-            return 0;
-
-        float[] sorted = (float[])data.Clone();
-        Array.Sort(sorted);
-
-        int size = sorted.Length;
-        int mid = size / 2;
-        float median = (size % 2 != 0) ? sorted[mid] : (sorted[mid] + sorted[mid - 1]) / 2;
-        return median;
     }
 }

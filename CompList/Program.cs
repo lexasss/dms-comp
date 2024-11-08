@@ -12,9 +12,8 @@
  * and fills the corresponding Excel sheet with the output values.
  */
 
-namespace CompList;
+namespace DmsComparison;
 
-using DmsComparison;
 using DmsComparison.Algorithms;
 using System;
 using ClosedXML.Excel;

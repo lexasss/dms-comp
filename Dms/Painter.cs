@@ -2,6 +2,7 @@
 using System.Windows.Shapes;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using DmsComparison.Common;
 
 namespace DmsComparison;
 
@@ -87,7 +88,7 @@ public static class Painter
     {
         float[] values = new float[data1.Length];
         for (int i = 0; i < data1.Length; i++)
-            values[i] = (data1[i] - data2[i]) * scale;
+            values[i] = (data2[i] - data1[i]) * scale;
 
         theme ??= new(DiffThemes[0]);
 
@@ -120,7 +121,7 @@ public static class Painter
         var maxValue = saturationValue > 0 ? saturationValue : data.Max();
 
         float range = maxValue - minValue;
-        float origin = minValue;
+        float origin = data.Median();
 
         if (dest is Canvas canvas)
             Draw(canvas, rows, cols, data, range, origin, theme);
