@@ -7,8 +7,10 @@
         mc:Ignorable="d"
         Title="DMS Comparator"
         Height="930" Width="900"
+        MinHeight="642" MinWidth="800"
         MouseMove="Window_MouseMove"
-        Closed="Window_Closed">
+        Closed="Window_Closed"
+        Icon="/Assets/images/icon.png">
 
     <Window.Resources>
         <Style x:Key="copy" TargetType="Button">

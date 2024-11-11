@@ -9,30 +9,45 @@
     <LangVersion>latest</LangVersion>
     <RootNamespace>DmsComparison</RootNamespace>
     <AssemblyName>DmsComparison</AssemblyName>
+    <ApplicationIcon>Assets\images\icon.ico</ApplicationIcon>
+    <Authors>Oleg Spakov</Authors>
+    <Company>Tampere University</Company>
+    <Copyright>Oleg Spakov @ 2024</Copyright>
+    <PackageProjectUrl>https://github.com/lexasss/dms-comp/releases/</PackageProjectUrl>
+    <PackageIcon>icon.png</PackageIcon>
+    <RepositoryUrl>https://github.com/lexasss/dms-comp/</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="WriteableBitmapEx" Version="1.6.8" />
   </ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\Algorithms\Algorithms.csproj" />
-	  <ProjectReference Include="..\Dms\Dms.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Algorithms\Algorithms.csproj" />
+    <ProjectReference Include="..\Dms\Dms.csproj" />
+  </ItemGroup>
 
-	<ItemGroup>
-	  <Compile Update="Properties\Settings.Designer.cs">
-	    <DesignTimeSharedInput>True</DesignTimeSharedInput>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>Settings.settings</DependentUpon>
-	  </Compile>
-	</ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\images\icon.ico" />
+  </ItemGroup>
 
-	<ItemGroup>
-	  <None Update="Properties\Settings.settings">
-	    <Generator>SettingsSingleFileGenerator</Generator>
-	    <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-	  </None>
-	</ItemGroup>
-	
+  <ItemGroup>
+    <Resource Include="Assets\images\icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  
 </Project>
