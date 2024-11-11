@@ -36,6 +36,10 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
                 {
                     parts.Add(_dms.Info);
                 }
+                else if (_dms.Pulses != null)
+                {
+                    parts.Add(_dms.Pulses);
+                }
             }
 
             lblDms.Content = string.Join(" | ", parts);
