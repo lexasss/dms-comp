@@ -38,7 +38,7 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
                 }
                 else if (_dms.Pulses != null)
                 {
-                    parts.Add(_dms.Pulses);
+                    parts.Add(string.Join(' ', _dms.Pulses));
                 }
             }
 
@@ -72,6 +72,7 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
 
         var settings = Properties.Settings.Default;
         _themeIndex = settings.Vis_DmsTheme;
+        _absoluteScale = settings.Vis_UseAbsoluteScale ? settings.Vis_AbsoluteScale : 0;
 
         _theme = new PlotColors(Painter.DmsThemes[_themeIndex]);
 

@@ -12,7 +12,7 @@ public class Dms
     public int Width { get; init; }
     public int Height { get; init; }
     public string? Info { get; init; }
-    public string? Pulses { get; init; }
+    public float[]? Pulses { get; init; }
     public string? MixType => Info?.Split(",")[0][3..];
     public string FullPath { get; init; }
     public string Folder { get; init; }
@@ -62,7 +62,7 @@ public class Dms
         try
         {
             var pulsesComment = JsonSerializer.Deserialize<CommentsPulses>(str ?? "");
-            Pulses = pulsesComment?.AsOneLine();
+            Pulses = pulsesComment?.Flows;
         }
         catch { }
     }
@@ -100,8 +100,6 @@ public class Dms
     record CommentsPulses(string[] pulses)
     {
         public float[] Flows => pulses.Select(p => float.Parse(p.Split('=')[1].Split(',')[0])).ToArray();
-
-        public string AsOneLine() => string.Join(' ', Flows);
     }
 
     readonly IonVision.Scan _scan;
