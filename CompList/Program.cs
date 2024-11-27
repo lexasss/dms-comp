@@ -216,7 +216,7 @@ public class Program
         var booleans = new bool[] { false, true };
         var result = new List<Options>();
         foreach (var crop in booleans)
-            foreach (var norm in Enum.GetValues<Normalization.Type>())
+            foreach (var norm in Enum.GetValues<NormalizationType>())
                 foreach (var rect in booleans)
                     result.Add(new Options(rect, norm, crop));
         return result.ToArray();

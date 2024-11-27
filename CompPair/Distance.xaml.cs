@@ -25,7 +25,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
         DataContext = this;
 
         var settings = Properties.Settings.Default;
-        _normalizationType = (Normalization.Type)settings.DataProc_Normalization;
+        _normalizationType = (NormalizationType)settings.DataProc_Normalization;
         _shouldRectify = settings.DataProc_Rectification;
 
         CreateUiListOfAlgorithms(settings.Alg_Name);
@@ -58,7 +58,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
 
     Algorithm? _algorithm = null;
     bool _shouldRectify;
-    Normalization.Type _normalizationType;
+    NormalizationType _normalizationType;
 
     float[]? _data1 = null;
     float[]? _data2 = null;
@@ -107,7 +107,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
 
     private void CreateUiListOfNormalizations()
     {
-        var normalizationTypes = Enum.GetValues<Normalization.Type>();
+        var normalizationTypes = Enum.GetValues<NormalizationType>();
         foreach (var normalizationType in normalizationTypes)
         {
             var rdb = new RadioButton()
@@ -119,10 +119,10 @@ public partial class Distance : UserControl, INotifyPropertyChanged
             };
             rdb.Click += (s, e) =>
             {
-                var normalizationType = (Normalization.Type?)(s as RadioButton)?.Tag;
+                var normalizationType = (NormalizationType?)(s as RadioButton)?.Tag;
                 if (normalizationType != null && normalizationType != _normalizationType)
                 {
-                    _normalizationType = (Normalization.Type)normalizationType;
+                    _normalizationType = (NormalizationType)normalizationType;
                     Update();
                 }
             };
