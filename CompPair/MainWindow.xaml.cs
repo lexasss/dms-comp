@@ -55,7 +55,7 @@ public partial class MainWindow : Window
         Task.Run(async () =>
         {
             await Task.Delay(durationMs);
-            Dispatcher.Invoke(() => lblDms2Copied.Visibility = visibility);
+            Dispatcher.Invoke(() => el.Visibility = visibility);
         });
     }
 
