@@ -53,11 +53,6 @@
                    Content="Copied"/>
         </WrapPanel>
 
-        <Label Grid.Row="1"
-               Content="Click to select two DMS measurement files"
-               HorizontalContentAlignment="Center"
-               VerticalContentAlignment="Center"
-               MouseDown="DiffPrompt_MouseDown"/>
         <Border Grid.Row="1"
                 BorderBrush="#FF8A8A8A"
                 BorderThickness="0,3">
@@ -72,6 +67,44 @@
                        VerticalAlignment="Bottom"/>
             </Grid>
         </Border>
+        <Label Grid.Row="1"
+               Content="Click to select two DMS measurement files"
+               HorizontalContentAlignment="Center"
+               VerticalContentAlignment="Center"
+               MouseDown="DiffPrompt_MouseDown">
+            <Label.Style>
+                <Style TargetType="Label">
+                    <Setter Property="Opacity" Value="0"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasDifferencePlot}" Value="False">
+                            <Setter Property="Opacity" Value="100"/>
+                        </DataTrigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Opacity" Value="100"/>
+                            <Setter Property="Foreground">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{StaticResource {x:Static SystemColors.HighlightColorKey}}"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Label.Style>
+        </Label>
+        <WrapPanel Grid.Row="1"
+                   Margin="0,0,0,2"
+                   VerticalAlignment="Bottom"
+                   HorizontalAlignment="Left">
+            <Button Style="{StaticResource copy}"
+                    IsEnabled="{Binding HasDifferencePlot, Mode=OneWay}"
+                    Click="DmsDiffCopyButton_Click">
+                <ContentControl Template="{StaticResource copySign}"/>
+            </Button>
+            <Label x:Name="lblDmsDiffCopied"
+                   VerticalAlignment="Center"
+                   Visibility="Hidden"
+                   Content="Copied"/>
+        </WrapPanel>
 
         <local:DmsPlot x:Name="dmsPlot2" Grid.Row="2"
                        DmsLoaded="DmsPlot_DmsLoaded"/>

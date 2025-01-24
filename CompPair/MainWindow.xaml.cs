@@ -1,13 +1,20 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Windows;
 using System.Windows.Input;
 
 namespace DmsComparison;
 
-public partial class MainWindow : Window
+public partial class MainWindow : Window, INotifyPropertyChanged
 {
+    public bool HasDifferencePlot { get; private set; } = false;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
     public MainWindow()
     {
         InitializeComponent();
+
+        DataContext = this;
 
         var settings = Properties.Settings.Default;
         stpTools.HorizontalAlignment = (HorizontalAlignment)settings.UI_ToolPanel_HorzAlign;
@@ -31,6 +38,9 @@ public partial class MainWindow : Window
         dstDistance.Clear();
         lblDmsDiff.Content = null;
 
+        HasDifferencePlot = false;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasDifferencePlot)));
+
         if (dms1 == null || dms2 == null)
             return;
 
@@ -39,6 +49,9 @@ public partial class MainWindow : Window
             Painter.DrawDiff(imgDmsDiff, dms1.Height, dms1.Width, dms1.Data, dms2.Data, (float)visVisOptions.DiffScale, _diffTheme);
             lblDmsDiff.Content = $"{dms1.MixType} vs {dms2.MixType}";
             dstDistance.Update(dms1, dms2);
+
+            HasDifferencePlot = true;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasDifferencePlot)));
         }
         else
         {
@@ -158,6 +171,15 @@ public partial class MainWindow : Window
         if (dmsPlot1.CopyToMemory())
         {
             FlickerElement(lblDms1Copied, 2000);
+        }
+    }
+
+    private void DmsDiffCopyButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (imgDmsDiff.Source is System.Windows.Media.Imaging.BitmapSource bmp)
+        {
+            Clipboard.SetImage(bmp);
+            FlickerElement(lblDmsDiffCopied, 2000);
         }
     }
 
