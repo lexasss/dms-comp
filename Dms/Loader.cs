@@ -30,6 +30,35 @@ public static class Loader
 
             return dms1 != null && dms2 != null;
         }
+        else if (!string.IsNullOrEmpty(filename1) && string.IsNullOrEmpty(filename2))
+        {
+            var dmses = Dms.LoadMultiple(filename1);
+            if (dmses != null)
+            {
+                if (dmses.Length > 2)
+                {
+                    var dialog = new SelectDmsRecord(dmses);
+                    if (dialog.ShowDialog() == true)
+                    {
+                        var selected = dialog.DmsItems.Where(item => item.IsSelected).ToArray();
+                        if (selected.Count() >= 2)
+                        {
+                            proceed(selected[0].Dms, selected[1].Dms);
+                            return true;
+                        }
+                    }
+                }
+                else if (dmses.Length == 2)
+                {
+                    proceed(dmses[0], dmses[1]);
+                    return true;
+                }
+                else
+                {
+                    MessageBox.Show("The file is either corrupted, or has no DMS data, or insufficient number of DMS data records", "DMS data loader", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
 
         return false;
     }
@@ -51,16 +80,20 @@ public static class Loader
         var ofd = new Microsoft.Win32.OpenFileDialog();
         ofd.Filter = "JSON files|*.json";
         ofd.Multiselect = true;
-        ofd.Title = "Select two DMS files";
+        ofd.Title = "Select two DMS JSON files, or one JSON file with multiple DMS records";
         if (ofd.ShowDialog() == true)
         {
             if (ofd.FileNames.Length == 2)
             {
                 return (ofd.FileNames[0], ofd.FileNames[1]);
             }
+            else if (ofd.FileNames.Length == 1)
+            {
+                return (ofd.FileNames[0], null);
+            }
             else
             {
-                MessageBox.Show("Please select exactly two DMS files.", "DMS comparison", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Please select no more than two DMS files.", "DMS comparison", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

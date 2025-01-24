@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Windows;
 
@@ -83,6 +84,47 @@ public class Dms
             if (dms != null)
             {
                 return new Dms(dms, filename);
+            }
+            else throw new Exception("Cannot read DMS data");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "DMS loader", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Creates two DMS object instance by loading data from the file with multiple DMS data records
+    /// </summary>
+    /// <param name="filename">JSON file storing one or more DMS data records</param>
+    /// <returns></returns>
+    public static Dms[]? LoadMultiple(string filename)
+    {
+        using StreamReader reader = new(filename);
+        var json = reader.ReadToEnd();
+
+        try
+        {
+            JsonSerializerOptions options = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
+            var scans = JsonSerializer.Deserialize<IonVision.Scan[]>(json, options);
+            if (scans != null)
+            {
+                if (scans.Length < 2)
+                {
+                    throw new Exception("Not enough DMS data");
+                }
+                return scans
+                    .Select(scan => {
+                        Dms? obj = null;
+                        try { obj = new Dms(scan, filename); }
+                        catch { }
+                        return obj;
+                    })
+                    .Where(dms => dms != null)
+                    .Cast<Dms>()
+                    .ToArray();
             }
             else throw new Exception("Cannot read DMS data");
         }
