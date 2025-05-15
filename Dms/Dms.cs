@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Linq;
 using System.Text.Json;
 using System.Windows;
 
@@ -14,7 +13,7 @@ public class Dms
     public int Height { get; init; }
     public string? Info { get; init; }
     public float[]? Pulses { get; init; }
-    public string? MixType => Info?.Split(",")[0][3..];
+    public string? MixType { get; init; }
     public string FullPath { get; init; }
     public string Folder { get; init; }
     public string Filename { get; init; }
@@ -53,17 +52,38 @@ public class Dms
 
         var str = _scan.Comments.ToString();
 
+        List<string?> infoLines = [];
+
         try
         {
             var textComment = JsonSerializer.Deserialize<CommentsGeneral>(str ?? "");
-            Info = textComment?.text;
+            infoLines.Add(textComment?.text);
         }
         catch { }
 
         try
         {
+            var quickComments = JsonSerializer.Deserialize<CommentsQuick>(str ?? "");
+            infoLines.AddRange(quickComments?._quickComments ?? []);
+        }
+        catch { }
+
+        var validComments = infoLines.Where(line => line != null);
+        Info = validComments.Count() > 0 ? string.Join("; ", validComments) : null;
+
+        var infoFields = Info?.Split(",");
+        var mixTypeRecord = infoFields?[0];
+        MixType = infoFields?.Length > 1 && mixTypeRecord?.Length > 3 ? mixTypeRecord[3..] : null;
+
+        try
+        {
             var pulsesComment = JsonSerializer.Deserialize<CommentsPulses>(str ?? "");
             Pulses = pulsesComment?.Flows;
+
+            if (Info == null && Pulses != null)
+            {
+                Info = string.Join(' ', Pulses);
+            }
         }
         catch { }
     }
@@ -139,6 +159,8 @@ public class Dms
     // Internal
 
     record CommentsGeneral(string text);
+    record CommentsQuick(string[] _quickComments);
+
     record CommentsPulses(string[] pulses)
     {
         public float[] Flows => pulses.Select(p => float.Parse(p.Split('=')[1].Split(',')[0])).ToArray();

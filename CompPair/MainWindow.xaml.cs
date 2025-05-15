@@ -47,7 +47,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         if (dms1.Height == dms2.Height && dms1.Width == dms2.Width)
         {
             Painter.DrawDiff(imgDmsDiff, dms1.Height, dms1.Width, dms1.Data, dms2.Data, (float)visVisOptions.DiffScale, _diffTheme);
-            lblDmsDiff.Content = $"{dms1.MixType} vs {dms2.MixType}";
+            lblDmsDiff.Content = $"{dms1.MixType ?? dms1.Info} [VS] {dms2.MixType ?? dms2.Info}";
             dstDistance.Update(dms1, dms2);
 
             HasDifferencePlot = true;

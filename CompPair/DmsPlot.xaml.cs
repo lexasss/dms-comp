@@ -32,7 +32,7 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
             {
                 parts.Add(_dms.Folder);
                 parts.Add(_dms.Filename);
-                if (_dms.Info != null)
+                if (!string.IsNullOrEmpty(_dms.Info))
                 {
                     parts.Add(_dms.Info);
                 }
