@@ -6,8 +6,6 @@ namespace DmsComparison;
 
 public partial class MainWindow : Window, INotifyPropertyChanged
 {
-    public bool HasDifferencePlot { get; private set; } = false;
-
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public MainWindow()
@@ -19,46 +17,12 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         var settings = Properties.Settings.Default;
         stpTools.HorizontalAlignment = (HorizontalAlignment)settings.UI_ToolPanel_HorzAlign;
         stpTools.VerticalAlignment = (VerticalAlignment)settings.UI_ToolPanel_VertAlign;
-
-        _diffThemeIndex = settings.Vis_DiffTheme;
-        _diffTheme = new PlotColors(Painter.DiffThemes[_diffThemeIndex]);
     }
 
     // Internal
 
     bool _canDragToolPanel = false;
     Point? _toolPanelClickPoint = null;
-
-    int _diffThemeIndex = 0;
-    PlotColors _diffTheme;
-
-    private void DisplayDmsDiff(Dms? dms1, Dms? dms2)
-    {
-        Painter.Clear(imgDmsDiff);
-        dstDistance.Clear();
-        lblDmsDiff.Content = null;
-
-        HasDifferencePlot = false;
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasDifferencePlot)));
-
-        if (dms1 == null || dms2 == null)
-            return;
-
-        if (dms1.Height == dms2.Height && dms1.Width == dms2.Width)
-        {
-            Painter.DrawDiff(imgDmsDiff, dms1.Height, dms1.Width, dms1.Data, dms2.Data, (float)visVisOptions.DiffScale, _diffTheme);
-            lblDmsDiff.Content = $"{dms1.MixType ?? dms1.Info} [VS] {dms2.MixType ?? dms2.Info}";
-            dstDistance.Update(dms1, dms2);
-
-            HasDifferencePlot = true;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasDifferencePlot)));
-        }
-        else
-        {
-            MessageBox.Show("DMS data have distinct number of rows or colunms and therefore their difference cannot be displayed.",
-                "DMS loader", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-    }
 
     private void FlickerElement(FrameworkElement el, int durationMs)
     {
@@ -96,15 +60,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         settings.UI_ToolPanel_HorzAlign = (int)stpTools.HorizontalAlignment;
         settings.UI_ToolPanel_VertAlign = (int)stpTools.VerticalAlignment;
         settings.Save();
-    }
-
-    private void DiffPrompt_MouseDown(object sender, MouseButtonEventArgs e)
-    {
-        Loader.LoadTwoDmsFiles((dms1, dms2) => {
-            dmsPlot1.Dms = dms1;
-            dmsPlot2.Dms = dms2;
-            DisplayDmsDiff(dms1, dms2);
-        });
     }
 
     private void ToolPanel_MouseDown(object sender, MouseButtonEventArgs e)
@@ -145,12 +100,37 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void VisOptions_DiffScaleChanged(object sender, double e)
     {
-        DisplayDmsDiff(dmsPlot1.Dms, dmsPlot2.Dms);
+        var scale = (float)visVisOptions.DiffScale;
+        dmsDiffPlot.Scale = scale;
     }
 
     private void DmsPlot_DmsLoaded(object sender, Dms? e)
     {
-        DisplayDmsDiff(dmsPlot1.Dms, dmsPlot2.Dms);
+        dmsDiffPlot.SetDms(dmsPlot1.Dms, dmsPlot2.Dms);
+
+        if (dmsDiffPlot.IsDifferenceReady)
+        {
+            dstDistance.Update(dmsPlot1.Dms!, dmsPlot2.Dms!);
+        }
+        else
+        {
+            dstDistance.Clear();
+        }
+    }
+
+    private void DmsDiffPlot_DmsLoaded(object sender, (Dms? dms1, Dms? dms2) e)
+    {
+        dmsPlot1.Dms = e.dms1;
+        dmsPlot2.Dms = e.dms2;
+
+        if (dmsDiffPlot.IsDifferenceReady)
+        {
+            dstDistance.Update(dmsPlot1.Dms!, dmsPlot2.Dms!);
+        }
+        else
+        {
+            dstDistance.Clear();
+        }
     }
 
     private void VisOptions_DmsThemeChanged(object sender, int e)
@@ -161,9 +141,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void VisOptions_DiffThemeChanged(object sender, int e)
     {
-        _diffThemeIndex = e;
-        _diffTheme = new PlotColors(Painter.DiffThemes[_diffThemeIndex]);
-        DisplayDmsDiff(dmsPlot1.Dms, dmsPlot2.Dms);
+        dmsDiffPlot.ThemeIndex = e;
     }
 
     private void Dms1CopyButton_Click(object sender, RoutedEventArgs e)
@@ -176,9 +154,8 @@ public partial class MainWindow : Window, INotifyPropertyChanged
 
     private void DmsDiffCopyButton_Click(object sender, RoutedEventArgs e)
     {
-        if (imgDmsDiff.Source is System.Windows.Media.Imaging.BitmapSource bmp)
+        if (dmsDiffPlot.CopyToMemory())
         {
-            Clipboard.SetImage(bmp);
             FlickerElement(lblDmsDiffCopied, 2000);
         }
     }

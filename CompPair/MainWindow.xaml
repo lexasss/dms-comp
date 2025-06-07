@@ -37,6 +37,7 @@
             <RowDefinition/>
             <RowDefinition/>
         </Grid.RowDefinitions>
+
         <local:DmsPlot x:Name="dmsPlot1" Grid.Row="0"
                        DmsLoaded="DmsPlot_DmsLoaded"/>
         <WrapPanel Grid.Row="0"
@@ -53,44 +54,9 @@
                    Content="Copied"/>
         </WrapPanel>
 
-        <Border Grid.Row="1"
-                BorderBrush="#FF8A8A8A"
-                BorderThickness="0,3">
-            <Grid>
-                <!--Canvas x:Name="cnvDmsDiff"
-                    MouseDown="DiffPrompt_MouseDown"/-->
-                <Image x:Name="imgDmsDiff" 
-                       Stretch="Fill"
-                       MouseDown="DiffPrompt_MouseDown"/>
-                <Label x:Name="lblDmsDiff" Grid.Row="0"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Bottom"/>
-            </Grid>
-        </Border>
-        <Label Grid.Row="1"
-               Content="Click to select two DMS measurement files"
-               HorizontalContentAlignment="Center"
-               VerticalContentAlignment="Center"
-               MouseDown="DiffPrompt_MouseDown">
-            <Label.Style>
-                <Style TargetType="Label">
-                    <Setter Property="Opacity" Value="0"/>
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding HasDifferencePlot}" Value="False">
-                            <Setter Property="Opacity" Value="100"/>
-                        </DataTrigger>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Opacity" Value="100"/>
-                            <Setter Property="Foreground">
-                                <Setter.Value>
-                                    <SolidColorBrush Color="{StaticResource {x:Static SystemColors.HighlightColorKey}}"/>
-                                </Setter.Value>
-                            </Setter>
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </Label.Style>
-        </Label>
+
+        <local:DmsDiffPlot x:Name="dmsDiffPlot" Grid.Row="1"
+                           DmsLoaded="DmsDiffPlot_DmsLoaded"/>
         <WrapPanel Grid.Row="1"
                    Margin="0,0,0,2"
                    VerticalAlignment="Bottom"
