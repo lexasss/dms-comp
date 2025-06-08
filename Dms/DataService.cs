@@ -23,7 +23,7 @@ public class DataService
         var raw = source switch
         {
             DataSource.Positive => dms.Scan.MeasurementData.IntensityTop,
-            DataSource.Negative => dms.Scan.MeasurementData.IntensityBottom,
+            DataSource.Negative => dms.Scan.MeasurementData.IntensityBottom.Select(v => -v).ToArray(),
             _ => throw new NotSupportedException($"""Data source "{source}" is not supported.""")
         };
         return new DataArray(dms.Height, dms.Width, raw);

@@ -5,7 +5,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:DmsComparison"
              mc:Ignorable="d" 
-             d:DesignHeight="250" d:DesignWidth="180">
+             Background="White"
+             d:DesignHeight="260" d:DesignWidth="180">
     <StackPanel>
         <Label Content="Visualization"
                FontSize="16"

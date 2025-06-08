@@ -3,9 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:sys="clr-namespace:System;assembly=mscorlib" 
              xmlns:local="clr-namespace:DmsComparison"
+             xmlns:dms="clr-namespace:DmsComparison;assembly=Dms"
              mc:Ignorable="d" 
-             d:DesignHeight="250" d:DesignWidth="300">
+             Background="White"
+             d:DesignHeight="290" d:DesignWidth="300">
     
     <UserControl.Resources>
         <Style TargetType="Label" x:Key="Header">
@@ -21,6 +24,22 @@
             <Setter Property="BorderBrush" Value="#FF646464"/>
             <Setter Property="Margin" Value="0,4,0,8"/>
         </Style>
+
+        <ObjectDataProvider x:Key="DmsDataSource"
+                            ObjectType="{x:Type sys:Enum}"
+                            MethodName="GetValues">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="dms:DataSource" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
+        <ObjectDataProvider x:Key="DmsDataType"
+                            ObjectType="{x:Type sys:Enum}"
+                            MethodName="GetValues">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="dms:DataType"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
     </UserControl.Resources>
 
     <Grid>
@@ -44,8 +63,23 @@
         </StackPanel>
 
         <StackPanel Grid.Row="1" Grid.Column="0">
-            <Label Style="{StaticResource Header}" Content="Algorithm"/>
-            <StackPanel x:Name="stpAlgorithms">
+            <Label Style="{StaticResource Header}" Content="Data"/>
+            <ComboBox ItemsSource="{Binding Source={StaticResource DmsDataSource}}"
+                      SelectedItem="{Binding DataSource, Mode=TwoWay}"
+                      Margin="0,0,0,4"/>
+            <ComboBox ItemsSource="{Binding Source={StaticResource DmsDataType}}"
+                      SelectedItem="{Binding DataType, Mode=TwoWay}"
+                      Margin="0,0,0,4"/>
+
+            <Separator/>
+            
+            <Label Style="{StaticResource Header}" Content="Pre-processing"/>
+            <CheckBox x:Name="chkRectify"
+                  Content="Rectify"
+                  IsChecked="{Binding ShouldRectify}"/>
+            <Separator/>
+            <Label Style="{StaticResource Header}" Content="Normalization"/>
+            <StackPanel x:Name="stpNormalizationType">
                 <!-- to be fill in the code -->
             </StackPanel>
         </StackPanel>
@@ -56,13 +90,8 @@
                 Margin="12,0,12,0"/>
 
         <StackPanel Grid.Row="1" Grid.Column="2">
-            <Label Style="{StaticResource Header}" Content="Pre-processing"/>
-            <CheckBox x:Name="chkRectify"
-                  Content="Rectify"
-                  IsChecked="{Binding ShouldRectify}"/>
-            <Separator/>
-            <Label Style="{StaticResource Header}" Content="Normalization"/>
-            <StackPanel x:Name="stpNormalizationType">
+            <Label Style="{StaticResource Header}" Content="Algorithm"/>
+            <StackPanel x:Name="stpAlgorithms">
                 <!-- to be fill in the code -->
             </StackPanel>
         </StackPanel>

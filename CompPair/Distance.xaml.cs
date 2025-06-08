@@ -18,7 +18,34 @@ public partial class Distance : UserControl, INotifyPropertyChanged
         }
     }
 
+    public DataType DataType
+    {
+        get => _dataType;
+        set
+        {
+            _dataType = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DataType)));
+            DataTypeChanged?.Invoke(this, _dataType);
+            Update();
+        }
+    }
+
+    public DataSource DataSource
+    {
+        get => _dataSource;
+        set
+        {
+            _dataSource = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DataType)));
+            DataSourceChanged?.Invoke(this, _dataSource);
+            Update();
+        }
+    }
+
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public event EventHandler<DataType>? DataTypeChanged;
+    public event EventHandler<DataSource>? DataSourceChanged;
 
     public Distance()
     {
@@ -28,6 +55,8 @@ public partial class Distance : UserControl, INotifyPropertyChanged
         var settings = Properties.Settings.Default;
         _normalizationType = (NormalizationType)settings.DataProc_Normalization;
         _shouldRectify = settings.DataProc_Rectification;
+        _dataType = (DataType)settings.DataProc_DataType;
+        _dataSource = (DataSource)settings.DataProc_DataSource;
 
         CreateUiListOfAlgorithms(settings.Alg_Name);
         CreateUiListOfNormalizations();
@@ -63,6 +92,8 @@ public partial class Distance : UserControl, INotifyPropertyChanged
     Algorithm? _algorithm = null;
     bool _shouldRectify;
     NormalizationType _normalizationType;
+    DataType _dataType = DataType.Raw;
+    DataSource _dataSource = DataSource.Positive;
 
     float[]? _data1 = null;
     float[]? _data2 = null;
@@ -141,6 +172,8 @@ public partial class Distance : UserControl, INotifyPropertyChanged
         settings.Alg_Name = _algorithm?.Name ?? "";
         settings.DataProc_Normalization = (int)_normalizationType;
         settings.DataProc_Rectification = _shouldRectify;
+        settings.DataProc_DataType = (int)_dataType;
+        settings.DataProc_DataSource = (int)_dataSource;
         settings.Save();
 
         txbDistance.Text = "";
