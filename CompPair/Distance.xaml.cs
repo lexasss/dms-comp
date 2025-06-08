@@ -18,7 +18,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
         }
     }
 
-    public DataType DataType
+    public Data.Type DataType
     {
         get => _dataType;
         set
@@ -30,22 +30,35 @@ public partial class Distance : UserControl, INotifyPropertyChanged
         }
     }
 
-    public DataSource DataSource
+    public Data.Source DataSource
     {
         get => _dataSource;
         set
         {
             _dataSource = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DataType)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DataSource)));
             DataSourceChanged?.Invoke(this, _dataSource);
+            Update();
+        }
+    }
+
+    public Data.Filter DataFilter
+    {
+        get => _dataFilter;
+        set
+        {
+            _dataFilter = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DataFilter)));
+            DataFilterChanged?.Invoke(this, _dataFilter);
             Update();
         }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public event EventHandler<DataType>? DataTypeChanged;
-    public event EventHandler<DataSource>? DataSourceChanged;
+    public event EventHandler<Data.Type>? DataTypeChanged;
+    public event EventHandler<Data.Source>? DataSourceChanged;
+    public event EventHandler<Data.Filter>? DataFilterChanged;
 
     public Distance()
     {
@@ -55,8 +68,9 @@ public partial class Distance : UserControl, INotifyPropertyChanged
         var settings = Properties.Settings.Default;
         _normalizationType = (NormalizationType)settings.DataProc_Normalization;
         _shouldRectify = settings.DataProc_Rectification;
-        _dataType = (DataType)settings.DataProc_DataType;
-        _dataSource = (DataSource)settings.DataProc_DataSource;
+        _dataType = (Data.Type)settings.DataProc_DataType;
+        _dataSource = (Data.Source)settings.DataProc_DataSource;
+        _dataFilter = (Data.Filter)settings.DataProc_DataFilter;
 
         CreateUiListOfAlgorithms(settings.Alg_Name);
         CreateUiListOfNormalizations();
@@ -92,8 +106,9 @@ public partial class Distance : UserControl, INotifyPropertyChanged
     Algorithm? _algorithm = null;
     bool _shouldRectify;
     NormalizationType _normalizationType;
-    DataType _dataType = DataType.Raw;
-    DataSource _dataSource = DataSource.Positive;
+    Data.Type _dataType;
+    Data.Source _dataSource;
+    Data.Filter _dataFilter;
 
     float[]? _data1 = null;
     float[]? _data2 = null;
@@ -174,6 +189,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
         settings.DataProc_Rectification = _shouldRectify;
         settings.DataProc_DataType = (int)_dataType;
         settings.DataProc_DataSource = (int)_dataSource;
+        settings.DataProc_DataFilter = (int)_dataFilter;
         settings.Save();
 
         txbDistance.Text = "";

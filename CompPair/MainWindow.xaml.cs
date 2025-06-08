@@ -22,6 +22,12 @@ public partial class MainWindow : Window
             dmsPlot1.DataSource = e;
             dmsPlot2.DataSource = e;
         };
+        dstDistance.DataFilterChanged += (s, e) =>
+        {
+            dmsDiffPlot.DataFilter = e;
+            dmsPlot1.DataFilter = e;
+            dmsPlot2.DataFilter = e;
+        };
     }
 
     // Internal

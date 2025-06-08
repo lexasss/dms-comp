@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:sys="clr-namespace:System;assembly=mscorlib" 
              xmlns:local="clr-namespace:DmsComparison"
-             xmlns:dms="clr-namespace:DmsComparison;assembly=Dms"
+             xmlns:dms="clr-namespace:DmsComparison.Data;assembly=Dms"
              mc:Ignorable="d" 
              Background="White"
              d:DesignHeight="290" d:DesignWidth="300">
@@ -29,7 +29,7 @@
                             ObjectType="{x:Type sys:Enum}"
                             MethodName="GetValues">
             <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="dms:DataSource" />
+                <x:Type TypeName="dms:Source" />
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
 
@@ -37,7 +37,15 @@
                             ObjectType="{x:Type sys:Enum}"
                             MethodName="GetValues">
             <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="dms:DataType"/>
+                <x:Type TypeName="dms:Type"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+
+        <ObjectDataProvider x:Key="DmsDataFilter"
+                            ObjectType="{x:Type sys:Enum}"
+                            MethodName="GetValues">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="dms:Filter"/>
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
     </UserControl.Resources>
@@ -69,6 +77,9 @@
                       Margin="0,0,0,4"/>
             <ComboBox ItemsSource="{Binding Source={StaticResource DmsDataType}}"
                       SelectedItem="{Binding DataType, Mode=TwoWay}"
+                      Margin="0,0,0,4"/>
+            <ComboBox ItemsSource="{Binding Source={StaticResource DmsDataFilter}}"
+                      SelectedItem="{Binding DataFilter, Mode=TwoWay}"
                       Margin="0,0,0,4"/>
 
             <Separator/>

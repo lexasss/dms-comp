@@ -63,7 +63,7 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
         }
     }
 
-    public DataSource DataSource
+    public Data.Source DataSource
     {
         get => _dataSource;
         set
@@ -71,6 +71,19 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
             if (_dataSource != value)
             {
                 _dataSource = value;
+                DisplayDms();
+            }
+        }
+    }
+
+    public Data.Filter DataFilter
+    {
+        get => _dataFilter;
+        set
+        {
+            if (_dataFilter != value)
+            {
+                _dataFilter = value;
                 DisplayDms();
             }
         }
@@ -86,7 +99,8 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
 
         var settings = Properties.Settings.Default;
 
-        _dataSource = (DataSource)settings.DataProc_DataSource;
+        _dataSource = (Data.Source)settings.DataProc_DataSource;
+        _dataFilter = (Data.Filter)settings.DataProc_DataFilter;
         _themeIndex = settings.Vis_DmsTheme;
         _absoluteScale = settings.Vis_UseAbsoluteScale ? settings.Vis_AbsoluteScale : 0;
 
@@ -111,14 +125,15 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
     Dms? _dms = null;
     double _absoluteScale = 400;
     int _themeIndex = 0;
-    DataSource _dataSource = DataSource.Positive;
+    Data.Source _dataSource;
+    Data.Filter _dataFilter;
     PlotColors _theme;
 
     private void DisplayDms()
     {
         if (_dms != null)
         {
-            var data = DataService.GetRaw(_dms, _dataSource);
+            var data = DataService.GetRaw(_dms, _dataFilter, _dataSource);
             Painter.DrawPlot(imgDms, data.Rows, data.Columns, data.Values, (float)AbsoluteScale, _theme);
         }
     }

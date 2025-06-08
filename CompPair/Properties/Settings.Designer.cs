@@ -166,5 +166,17 @@ namespace DmsComparison.Properties {
                 this["DataProc_DataSource"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int DataProc_DataFilter {
+            get {
+                return ((int)(this["DataProc_DataFilter"]));
+            }
+            set {
+                this["DataProc_DataFilter"] = value;
+            }
+        }
     }
 }

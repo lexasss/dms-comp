@@ -31,7 +31,7 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
         }
     }
 
-    public DataType DataType
+    public Data.Type DataType
     {
         get => _dataType;
         set
@@ -44,7 +44,7 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
         }
     }
 
-    public DataSource DataSource
+    public Data.Source DataSource
     {
         get => _dataSource;
         set
@@ -52,6 +52,19 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
             if (_dataSource != value)
             {
                 _dataSource = value;
+                DisplayDifference();
+            }
+        }
+    }
+
+    public Data.Filter DataFilter
+    {
+        get => _dataFilter;
+        set
+        {
+            if (_dataFilter != value)
+            {
+                _dataFilter = value;
                 DisplayDifference();
             }
         }
@@ -69,8 +82,9 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
 
         var settings = Properties.Settings.Default;
 
-        _dataType = (DataType)settings.DataProc_DataType;
-        _dataSource = (DataSource)settings.DataProc_DataSource;
+        _dataType = (Data.Type)settings.DataProc_DataType;
+        _dataSource = (Data.Source)settings.DataProc_DataSource;
+        _dataFilter = (Data.Filter)settings.DataProc_DataFilter;
         _themeIndex = settings.Vis_DiffTheme;
         _theme = new PlotColors(Painter.DiffThemes[_themeIndex]);
 
@@ -104,8 +118,9 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
     Dms? _dms2 = null;
     double _scale = 4;
     int _themeIndex = 0;
-    DataType _dataType = DataType.Raw;
-    DataSource _dataSource = DataSource.Positive;
+    Data.Type _dataType = Data.Type.Raw;
+    Data.Source _dataSource = Data.Source.Positive;
+    Data.Filter _dataFilter = Data.Filter.None;
     PlotColors _theme;
 
     private void DisplayDifference()
@@ -118,7 +133,7 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
 
         if (DataService.IsSameShape(_dms1, _dms2))
         {
-            var diff = DataService.GetDifference(_dms1, _dms2, _dataType, _dataSource);
+            var diff = DataService.GetDifference(_dms1, _dms2, _dataType, _dataFilter, _dataSource);
             if (diff != null)
             {
                 Painter.DrawPlot(imgDmsDiff, diff.Rows, diff.Columns, diff.Values, (float)(1000.0 - 999.9 * Math.Sqrt(Scale / 10)), _theme);
