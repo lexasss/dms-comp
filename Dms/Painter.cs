@@ -11,7 +11,7 @@ namespace DmsComparison;
 /// </summary>
 public static class Painter
 {
-    public static PlotColors.Theme[] DmsThemes => new PlotColors.Theme[]{
+    public static PlotColors.Theme[] DmsThemes => [
         [
             new(0, Color.FromRgb(240, 240, 240)),
             new(0.03, Color.FromRgb(0, 208, 208)),
@@ -41,8 +41,8 @@ public static class Painter
             new(0.7, Color.FromRgb(208, 0, 0)),
             new(1, Color.FromRgb(224, 224, 224)),
         ]
-    };
-    public static PlotColors.Theme[] DiffThemes => new PlotColors.Theme[] {
+    ];
+    public static PlotColors.Theme[] DiffThemes => [
         [
             new(-1, Colors.Blue),
             new(0, Colors.White),
@@ -54,7 +54,7 @@ public static class Painter
             new(0.3, Color.FromRgb(106, 106, 106)),
             new(1, Colors.Red),
         ]
-    };
+    ];
 
     /// <summary>
     /// Clears the drawing destination

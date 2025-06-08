@@ -28,7 +28,7 @@
                 <Style TargetType="Label">
                     <Setter Property="Opacity" Value="0"/>
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsDifferenceReady}" Value="False">
+                        <DataTrigger Binding="{Binding CanComputeDifference}" Value="False">
                             <Setter Property="Opacity" Value="100"/>
                         </DataTrigger>
                         <Trigger Property="IsMouseOver" Value="True">

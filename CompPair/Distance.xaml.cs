@@ -1,4 +1,5 @@
 ﻿using DmsComparison.Algorithms;
+using DmsComparison.Common;
 using System.ComponentModel;
 using System.Windows.Controls;
 
@@ -44,11 +45,14 @@ public partial class Distance : UserControl, INotifyPropertyChanged
 
     public void Update(Dms dms1, Dms dms2)
     {
-        if (dms1.Width == dms2.Width && dms1.Height == dms2.Height)
+        if (dms1 != null && dms2 != null && DataService.IsSameShape(dms1, dms2))
         {
-            _data1 = dms1.Data;
-            _data2 = dms2.Data;
-            _size = new Size(dms1.Width, dms1.Height);
+            var data1 = DataService.GetRaw(dms1);
+            var data2 = DataService.GetRaw(dms2);
+
+            _data1 = data1.Values;
+            _data2 = data2.Values;
+            _size = new Size(data1.Columns, data1.Rows);
 
             Update();
         }

@@ -9,8 +9,6 @@ namespace DmsComparison;
 /// </summary>
 public class Dms
 {
-    public int Width { get; init; }
-    public int Height { get; init; }
     public string? Info { get; init; }
     public float[]? Pulses { get; init; }
     public string? MixType { get; init; }
@@ -19,6 +17,10 @@ public class Dms
     public string Filename { get; init; }
     public string Date { get; init; }
     public string Time { get; init; }
+
+    public IonVision.Scan Scan => _scan;
+    public int Width { get; init; }
+    public int Height { get; init; }
     public float[] Data => _scan.MeasurementData.IntensityTop;
 
     /// <summary>
@@ -100,10 +102,10 @@ public class Dms
 
         try
         {
-            var dms = JsonSerializer.Deserialize<IonVision.Scan>(json);
-            if (dms != null)
+            var scan = JsonSerializer.Deserialize<IonVision.Scan>(json);
+            if (scan != null)
             {
-                return new Dms(dms, filename);
+                return new Dms(scan, filename);
             }
             else throw new Exception("Cannot read DMS data");
         }

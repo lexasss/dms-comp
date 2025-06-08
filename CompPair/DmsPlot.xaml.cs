@@ -101,7 +101,8 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
     {
         if (_dms != null)
         {
-            Painter.DrawPlot(imgDms, _dms.Height, _dms.Width, _dms.Data, (float)AbsoluteScale, _theme);
+            var data = DataService.GetRaw(_dms);
+            Painter.DrawPlot(imgDms, data.Rows, data.Columns, data.Values, (float)AbsoluteScale, _theme);
         }
     }
 
@@ -112,7 +113,6 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
         Loader.LoadDmsFile(dms =>
         {
             Dms = dms;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDmsReady)));
             DmsLoaded?.Invoke(this, dms);
         });
     }

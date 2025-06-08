@@ -62,7 +62,7 @@
                    VerticalAlignment="Bottom"
                    HorizontalAlignment="Left">
             <Button Style="{StaticResource copy}"
-                    IsEnabled="{Binding HasDifferencePlot, Mode=OneWay}"
+                    IsEnabled="{Binding CanComputeDifference, ElementName=dmsDiffPlot, Mode=OneWay}"
                     Click="DmsDiffCopyButton_Click">
                 <ContentControl Template="{StaticResource copySign}"/>
             </Button>

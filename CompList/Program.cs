@@ -14,6 +14,7 @@
 
 namespace DmsComparison;
 
+using DmsComparison.Common;
 using DmsComparison.Algorithms;
 using System;
 using ClosedXML.Excel;
@@ -260,12 +261,15 @@ public class Program
                     {
                         var dms1 = dmsSet1[i];
                         var dms2 = dmsSet2[j];
-                        if (dms1 == dms2 || dms1.Width != dms2.Width || dms1.Height != dms2.Height)
+                        if (dms1 == dms2 || dms1 == null || dms2 == null || !DataService.IsSameShape(dms1, dms2))
                             continue;
 
-                        distanceCount += 1;
-                        var dist = algorithm.ComputeDistance(dms1.Data, dms2.Data, new Size(dms1.Width, dms2.Height), options);
+                        DataArray data1 = DataService.GetRaw(dms1);
+                        DataArray data2 = DataService.GetRaw(dms2);
+
+                        var dist = algorithm.ComputeDistance(data1.Values, data2.Values, new Size(data1.Columns, data2.Rows), options);
                         distanceSum += dist;
+                        distanceCount += 1;
                         distances.Add(dist);
 
                         if (VERBOSE)

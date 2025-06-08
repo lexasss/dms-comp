@@ -1,13 +1,10 @@
-﻿using System.ComponentModel;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Input;
 
 namespace DmsComparison;
 
-public partial class MainWindow : Window, INotifyPropertyChanged
+public partial class MainWindow : Window
 {
-    public event PropertyChangedEventHandler? PropertyChanged;
-
     public MainWindow()
     {
         InitializeComponent();
@@ -108,7 +105,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         dmsDiffPlot.SetDms(dmsPlot1.Dms, dmsPlot2.Dms);
 
-        if (dmsDiffPlot.IsDifferenceReady)
+        if (dmsDiffPlot.CanComputeDifference)
         {
             dstDistance.Update(dmsPlot1.Dms!, dmsPlot2.Dms!);
         }
@@ -123,7 +120,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         dmsPlot1.Dms = e.dms1;
         dmsPlot2.Dms = e.dms2;
 
-        if (dmsDiffPlot.IsDifferenceReady)
+        if (dmsDiffPlot.CanComputeDifference)
         {
             dstDistance.Update(dmsPlot1.Dms!, dmsPlot2.Dms!);
         }

@@ -7,7 +7,7 @@ namespace DmsComparison;
 
 public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
 {
-    public float Scale
+    public double Scale
     {
         get => _scale;
         set
@@ -31,7 +31,7 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
         }
     }
 
-    public bool IsDifferenceReady => _dms1 != null && _dms2 != null && _dms1.Height == _dms2.Height && _dms1.Width == _dms2.Width;
+    public bool CanComputeDifference => _dms1 != null && _dms2 != null && DataService.IsSameShape(_dms1, _dms2);
 
     public event EventHandler<(Dms?, Dms?)>? DmsLoaded;
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -41,8 +41,12 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
         InitializeComponent();
         DataContext = this;
 
-        _themeIndex = Properties.Settings.Default.Vis_DiffTheme;
+        var settings = Properties.Settings.Default;
+
+        _themeIndex = settings.Vis_DiffTheme;
         _theme = new PlotColors(Painter.DiffThemes[_themeIndex]);
+
+        _scale = settings.Vis_DiffScale;
     }
 
     public bool CopyToMemory()
@@ -63,18 +67,34 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
 
         DisplayDifference();
 
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDifferenceReady)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanComputeDifference)));
     }
+
+    // Internal
+
+    Dms? _dms1 = null;
+    Dms? _dms2 = null;
+    double _scale = 4;
+    int _themeIndex = 0;
+    PlotColors _theme;
 
     private void DisplayDifference()
     {
         Painter.Clear(imgDmsDiff);
         lblDmsDiff.Content = null;
 
-        if (IsDifferenceReady)
+        if (_dms1 == null || _dms2 == null)
+            return;
+
+        if (DataService.IsSameShape(_dms1, _dms2))
         {
-            lblDmsDiff.Content = $"{_dms1!.MixType ?? _dms1.Info} [VS] {_dms2!.MixType ?? _dms2.Info}";
-            Painter.DrawDiff(imgDmsDiff, _dms1.Height, _dms1.Width, _dms1.Data, _dms2.Data, Scale, _theme);
+            var diff = DataService.GetDifference(_dms1, _dms2, DataType.Raw);
+            if (diff != null)
+            {
+                Painter.DrawPlot(imgDmsDiff, diff.Rows, diff.Columns, diff.Values, (float)(1000.0 - 999.9 * Math.Sqrt(Scale / 10)), _theme);
+                lblDmsDiff.Content = $"{_dms1!.MixType ?? _dms1.Info} [VS] {_dms2!.MixType ?? _dms2.Info}";
+            }
+            //Painter.DrawDiff(imgDmsDiff, _dms1.Height, _dms1.Width, _dms1.Data, _dms2.Data, (float)AbsoluteScale, _theme);
         }
         else
         {
@@ -83,19 +103,10 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
         }
     }
 
-    // Internal
-
-    Dms? _dms1 = null;
-    Dms? _dms2 = null;
-    float _scale = 400;
-    int _themeIndex = 0;
-    PlotColors _theme;
-
     private void DiffPrompt_MouseDown(object sender, MouseButtonEventArgs e)
     {
         Loader.LoadTwoDmsFiles((dms1, dms2) => {
             SetDms(dms1, dms2);
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDifferenceReady)));
             DmsLoaded?.Invoke(this, (dms1, dms2));
         });
     }

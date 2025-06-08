@@ -2,8 +2,6 @@
 
 namespace DmsComparison.Algorithms;
 
-public record Size(int Width, int Height);
-
 public class Options(bool useRectification, NormalizationType normalizationType, bool cropArea)
 {
     public bool UseRectification => useRectification;
