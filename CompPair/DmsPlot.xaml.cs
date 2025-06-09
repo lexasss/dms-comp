@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Data.Common;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -63,6 +62,19 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
         }
     }
 
+    public Data.Type DataType
+    {
+        get => _dataType;
+        set
+        {
+            if (_dataType != value)
+            {
+                _dataType = value;
+                DisplayDms();
+            }
+        }
+    }
+
     public Data.Source DataSource
     {
         get => _dataSource;
@@ -99,6 +111,7 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
 
         var settings = Properties.Settings.Default;
 
+        _dataType = (Data.Type)settings.DataProc_DataType;
         _dataSource = (Data.Source)settings.DataProc_DataSource;
         _dataFilter = (Data.Filter)settings.DataProc_DataFilter;
         _themeIndex = settings.Vis_DmsTheme;
@@ -123,8 +136,9 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
     // Internal
 
     Dms? _dms = null;
-    double _absoluteScale = 400;
+    double _absoluteScale;
     int _themeIndex = 0;
+    Data.Type _dataType;
     Data.Source _dataSource;
     Data.Filter _dataFilter;
     PlotColors _theme;
@@ -133,7 +147,7 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
     {
         if (_dms != null)
         {
-            var data = DataService.GetRaw(_dms, _dataFilter, _dataSource);
+            var data = DataService.GetRaw(_dms, _dataType, _dataFilter, _dataSource);
             Painter.DrawPlot(imgDms, data.Rows, data.Columns, data.Values, (float)AbsoluteScale, _theme);
         }
     }

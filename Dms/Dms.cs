@@ -165,7 +165,7 @@ public class Dms
 
     record CommentsPulses(string[] pulses)
     {
-        public float[] Flows => pulses.Select(p => float.Parse(p.Split('=')[1].Split(',')[0])).ToArray();
+        public float[] Flows => pulses?.Select(p => float.Parse(p.Split('=')[1].Split(',')[0])).ToArray() ?? [];
     }
 
     readonly IonVision.Scan _scan;

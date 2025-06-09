@@ -14,7 +14,7 @@ public enum Type
 
 public enum Filter
 {
-    None,
+    Unfiltered,
     LowValues
 }
 

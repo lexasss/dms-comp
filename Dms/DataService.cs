@@ -1,13 +1,29 @@
 ﻿namespace DmsComparison;
 
-public record class DataArray(int Rows, int Columns, float[] Values);
+internal record class DataGradient(int Rows, int Columns, System.Windows.Vector[] Values);
+
+public record class DataArray(int Rows, int Columns, float[] Values)
+{
+    internal static DataArray FromGradient(DataGradient gradient)
+    {
+        int size = gradient.Columns * gradient.Rows;
+        var result = new float[size];
+        for (int i = 0; i < size; i++)
+        {
+            var v = gradient.Values[i];
+            result[i] = (float)(Math.Abs(v.X) + Math.Abs(v.Y)) / 2;
+        }
+        return new DataArray(gradient.Rows, gradient.Columns, result);
+    }
+}
 
 public class DataService
 {
     public static bool IsSameShape(Dms dms1, Dms dms2) => dms1.Height == dms2.Height && dms1.Width == dms2.Width;
     
-    public static DataArray GetRaw(Dms dms, 
-        Data.Filter filter = Data.Filter.None,
+    public static DataArray GetRaw(Dms dms,
+        Data.Type type = Data.Type.Raw,
+        Data.Filter filter = Data.Filter.Unfiltered,
         Data.Source source = Data.Source.Positive)
     {
         var raw = source switch
@@ -19,12 +35,17 @@ public class DataService
 
         var filtered = ApplyFilter(raw, filter);
 
-        return new DataArray(dms.Height, dms.Width, filtered);
+        return type switch
+        {
+            Data.Type.Raw => new DataArray(dms.Height, dms.Width, filtered),
+            Data.Type.Gradient => DataArray.FromGradient(GetGradient(filtered, dms.Height, dms.Width)),
+            _ => throw new NotSupportedException($"""Data type "{type}" is not supported.""")
+        };
     }
 
     public static DataArray? GetDifference(Dms? dms1, Dms? dms2,
         Data.Type type,
-        Data.Filter filter = Data.Filter.None,
+        Data.Filter filter = Data.Filter.Unfiltered,
         Data.Source source = Data.Source.Positive)
     {
         if (dms1 == null || dms2 == null || !IsSameShape(dms1, dms2))
@@ -55,8 +76,6 @@ public class DataService
     }
 
     // Internal
-
-    record class DataGradient(int Rows, int Columns, System.Windows.Vector[] Values);
 
     private static DataArray GetDifference(float[] array1, float[] array2, int rows, int columns)
     {
@@ -106,7 +125,7 @@ public class DataService
 
     private static float[] ApplyFilter(float[] data, Data.Filter filter)
     {
-        if (filter == Data.Filter.None)
+        if (filter == Data.Filter.Unfiltered)
             return data;
 
         var result = new float[data.Length];

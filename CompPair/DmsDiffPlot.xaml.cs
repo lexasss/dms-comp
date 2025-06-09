@@ -118,9 +118,9 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
     Dms? _dms2 = null;
     double _scale = 4;
     int _themeIndex = 0;
-    Data.Type _dataType = Data.Type.Raw;
-    Data.Source _dataSource = Data.Source.Positive;
-    Data.Filter _dataFilter = Data.Filter.None;
+    Data.Type _dataType;
+    Data.Source _dataSource;
+    Data.Filter _dataFilter;
     PlotColors _theme;
 
     private void DisplayDifference()
@@ -136,7 +136,7 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
             var diff = DataService.GetDifference(_dms1, _dms2, _dataType, _dataFilter, _dataSource);
             if (diff != null)
             {
-                Painter.DrawPlot(imgDmsDiff, diff.Rows, diff.Columns, diff.Values, (float)(1000.0 - 999.9 * Math.Sqrt(Scale / 10)), _theme);
+                Painter.DrawPlot(imgDmsDiff, diff.Rows, diff.Columns, diff.Values, (float)(100.1 - Scale * 10), _theme);
                 lblDmsDiff.Content = $"{_dms1!.MixType ?? _dms1.Info} [VS] {_dms2!.MixType ?? _dms2.Info}";
             }
             //Painter.DrawDiff(imgDmsDiff, _dms1.Height, _dms1.Width, _dms1.Data, _dms2.Data, (float)AbsoluteScale, _theme);

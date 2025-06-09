@@ -15,7 +15,12 @@ public partial class MainWindow : Window
         stpTools.HorizontalAlignment = (HorizontalAlignment)settings.UI_ToolPanel_HorzAlign;
         stpTools.VerticalAlignment = (VerticalAlignment)settings.UI_ToolPanel_VertAlign;
 
-        dstDistance.DataTypeChanged += (s, e) => dmsDiffPlot.DataType = e;
+        dstDistance.DataTypeChanged += (s, e) =>
+        {
+            dmsDiffPlot.DataType = e;
+            dmsPlot1.DataType = e;
+            dmsPlot2.DataType = e;
+        };
         dstDistance.DataSourceChanged += (s, e) =>
         {
             dmsDiffPlot.DataSource = e;

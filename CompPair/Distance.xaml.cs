@@ -26,7 +26,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
             _dataType = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DataType)));
             DataTypeChanged?.Invoke(this, _dataType);
-            Update();
+            Update(_dms1, _dms2);
         }
     }
 
@@ -38,7 +38,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
             _dataSource = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DataSource)));
             DataSourceChanged?.Invoke(this, _dataSource);
-            Update();
+            Update(_dms1, _dms2);
         }
     }
 
@@ -50,7 +50,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
             _dataFilter = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DataFilter)));
             DataFilterChanged?.Invoke(this, _dataFilter);
-            Update();
+            Update(_dms1, _dms2);
         }
     }
 
@@ -86,12 +86,15 @@ public partial class Distance : UserControl, INotifyPropertyChanged
         Update();
     }
 
-    public void Update(Dms dms1, Dms dms2)
+    public void Update(Dms? dms1, Dms? dms2)
     {
+        _dms1 = dms1;
+        _dms2 = dms2;
+
         if (dms1 != null && dms2 != null && DataService.IsSameShape(dms1, dms2))
         {
-            var data1 = DataService.GetRaw(dms1);
-            var data2 = DataService.GetRaw(dms2);
+            var data1 = DataService.GetRaw(dms1, DataType, DataFilter, DataSource);
+            var data2 = DataService.GetRaw(dms2, DataType, DataFilter, DataSource);
 
             _data1 = data1.Values;
             _data2 = data2.Values;
@@ -109,6 +112,9 @@ public partial class Distance : UserControl, INotifyPropertyChanged
     Data.Type _dataType;
     Data.Source _dataSource;
     Data.Filter _dataFilter;
+
+    Dms? _dms1 = null;
+    Dms? _dms2 = null;
 
     float[]? _data1 = null;
     float[]? _data2 = null;
