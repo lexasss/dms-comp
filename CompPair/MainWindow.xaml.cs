@@ -206,24 +206,31 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
-    private void dstDistance_DataTypeChanged(object sender, Distance.DataTypeChangedEventArgs e)
+    private void Distance_DataTypeChanged(object sender, Distance.DataTypeChangedEventArgs e)
     {
         dmsDiffPlot.DataType = e.Type;
         dmsPlot1.DataType = e.Type;
         dmsPlot2.DataType = e.Type;
     }
 
-    private void dstDistance_DataSourceChanged(object sender, Distance.DataSourceChangedEventArgs e)
+    private void Distance_DataSourceChanged(object sender, Distance.DataSourceChangedEventArgs e)
     {
         dmsDiffPlot.DataSource = e.Source;
         dmsPlot1.DataSource = e.Source;
         dmsPlot2.DataSource = e.Source;
     }
 
-    private void dstDistance_DataFilterChanged(object sender, Distance.DataFilterChangedEventArgs e)
+    private void Distance_DataFilterChanged(object sender, Distance.DataFilterChangedEventArgs e)
     {
         dmsDiffPlot.DataFilter = e.Filter;
         dmsPlot1.DataFilter = e.Filter;
         dmsPlot2.DataFilter = e.Filter;
+    }
+
+    private void Distance_DataFilterSettingsChanged(object sender, Distance.DataFilterSettingsChangedEventArgs e)
+    {
+        dmsDiffPlot.DataFilterSettings = e.FilterSettings;
+        dmsPlot1.DataFilterSettings = e.FilterSettings;
+        dmsPlot2.DataFilterSettings = e.FilterSettings;
     }
 }

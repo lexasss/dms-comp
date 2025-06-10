@@ -31,26 +31,30 @@ public abstract class Algorithm
 
     public double ComputeDistance(float[] data1, float[] data2, Size size, Options options)
     {
-        data1 = (float[])data1.Clone();
-        data2 = (float[])data2.Clone();
+        var array1 = new float[data1.Length];
+        var array2 = new float[data2.Length];
+
+        Array.Copy(data1, array1, data1.Length);
+        Array.Copy(data2, array2, data2.Length);
 
         if (options.Crop)
         {
-            data1 = DataProcessing.Crop(data1, size);
-            data2 = DataProcessing.Crop(data2, size);
+            array1 = DataProcessing.Crop(array1, size);
+            array2 = DataProcessing.Crop(array2, size);
         }
 
         if (options.UseRectification)
         {
-            data1 = DataProcessing.Rectify(data1);
-            data2 = DataProcessing.Rectify(data2);
-            _isDataRectified = options.UseRectification;
+            array1 = DataProcessing.Rectify(array1);
+            array2 = DataProcessing.Rectify(array2);
         }
 
-        DataProcessing.Normalize(data1, size, options.NormalizationType);
-        DataProcessing.Normalize(data2, size, options.NormalizationType);
+        _isDataRectified = options.UseRectification;
 
-        return Math.Abs(ComputeDistance(data1, data2));
+        DataProcessing.Normalize(array1, size, options.NormalizationType);
+        DataProcessing.Normalize(array2, size, options.NormalizationType);
+
+        return Math.Abs(ComputeDistance(array1, array2));
     }
 
     // Internal

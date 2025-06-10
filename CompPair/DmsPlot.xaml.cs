@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using DmsComparison.Data;
+using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -101,6 +102,19 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
         }
     }
 
+    public FilterSettings DataFilterSettings
+    {
+        get => field;
+        set
+        {
+            if (field != value)
+            {
+                field = value;
+                DisplayDms();
+            }
+        }
+    }
+
     public class DmsLoadedEventArgs(Dms? dms) : EventArgs
     {
         public Dms? Dms { get; } = dms;
@@ -116,11 +130,15 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
 
         var settings = Properties.Settings.Default;
 
+        AbsoluteScale = settings.Vis_UseAbsoluteScale ? settings.Vis_AbsoluteScale : 0;
         DataType = (Data.Type)settings.DataProc_DataType;
         DataSource = (Data.Source)settings.DataProc_DataSource;
         DataFilter = (Data.Filter)settings.DataProc_DataFilter;
+        DataFilterSettings = new FilterSettings(
+            settings.DataProc_FilterSettings_From,
+            settings.DataProc_FilterSettings_To,
+            (DataLimitType)settings.DataProc_FilterSettings_LimitType);
         ThemeIndex = settings.Vis_DmsTheme;
-        AbsoluteScale = settings.Vis_UseAbsoluteScale ? settings.Vis_AbsoluteScale : 0;
 
         _theme = new PlotColors(Painter.DmsThemes[ThemeIndex]);
 
@@ -146,7 +164,7 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
     {
         if (Dms != null)
         {
-            var data = DataService.GetRaw(Dms, DataType, DataFilter, DataSource);
+            var data = DataService.GetRaw(Dms, DataType, DataSource, DataFilter, DataFilterSettings);
             Painter.DrawPlot(imgDms, data.Rows, data.Columns, data.Values, (float)AbsoluteScale, _theme);
         }
     }

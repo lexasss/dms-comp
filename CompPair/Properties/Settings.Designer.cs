@@ -202,5 +202,41 @@ namespace DmsComparison.Properties {
                 this["UI_VisualizationPanelMinimized"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public float DataProc_FilterSettings_From {
+            get {
+                return ((float)(this["DataProc_FilterSettings_From"]));
+            }
+            set {
+                this["DataProc_FilterSettings_From"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public float DataProc_FilterSettings_To {
+            get {
+                return ((float)(this["DataProc_FilterSettings_To"]));
+            }
+            set {
+                this["DataProc_FilterSettings_To"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public int DataProc_FilterSettings_LimitType {
+            get {
+                return ((int)(this["DataProc_FilterSettings_LimitType"]));
+            }
+            set {
+                this["DataProc_FilterSettings_LimitType"] = value;
+            }
+        }
     }
 }

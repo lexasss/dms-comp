@@ -124,9 +124,10 @@
                     BorderThickness="3">
                 <Grid>
                     <local:Distance x:Name="dstDistance"
-                                    DataTypeChanged="dstDistance_DataTypeChanged"
-                                    DataSourceChanged="dstDistance_DataSourceChanged"
-                                    DataFilterChanged="dstDistance_DataFilterChanged"/>
+                                    DataTypeChanged="Distance_DataTypeChanged"
+                                    DataSourceChanged="Distance_DataSourceChanged"
+                                    DataFilterChanged="Distance_DataFilterChanged"
+                                    DataFilterSettingsChanged="Distance_DataFilterSettingsChanged"/>
                     <ToggleButton Style="{StaticResource shrink}"
                                   IsChecked="{Binding IsDistancePanelMinimized}"/>
                 </Grid>

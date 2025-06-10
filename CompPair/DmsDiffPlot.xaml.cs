@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using DmsComparison.Data;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -70,6 +71,19 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
         }
     }
 
+    public FilterSettings DataFilterSettings
+    {
+        get => field;
+        set
+        {
+            if (field != value)
+            {
+                field = value;
+                DisplayDifference();
+            }
+        }
+    }
+
     public bool CanComputeDifference => _dms1 != null && _dms2 != null && DataService.IsSameShape(_dms1, _dms2);
 
     public class DmsLoadedEventArgs(Dms? dms1, Dms? dms2) : EventArgs
@@ -92,6 +106,10 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
         DataType = (Data.Type)settings.DataProc_DataType;
         DataSource = (Data.Source)settings.DataProc_DataSource;
         DataFilter = (Data.Filter)settings.DataProc_DataFilter;
+        DataFilterSettings = new FilterSettings(
+            settings.DataProc_FilterSettings_From,
+            settings.DataProc_FilterSettings_To,
+            (DataLimitType)settings.DataProc_FilterSettings_LimitType);
         ThemeIndex = settings.Vis_DiffTheme;
 
         _theme = new PlotColors(Painter.DiffThemes[ThemeIndex]);
@@ -135,7 +153,7 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
 
         if (DataService.IsSameShape(_dms1, _dms2))
         {
-            var diff = DataService.GetDifference(_dms1, _dms2, DataType, DataFilter, DataSource);
+            var diff = DataService.GetDifference(_dms1, _dms2, DataType, DataSource, DataFilter, DataFilterSettings);
             if (diff != null)
             {
                 Painter.DrawPlot(imgDmsDiff, diff.Rows, diff.Columns, diff.Values, (float)(100.1 - Scale * 10), _theme);
