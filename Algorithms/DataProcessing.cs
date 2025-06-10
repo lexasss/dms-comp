@@ -12,7 +12,7 @@ public enum NormalizationType
 
 internal static class DataProcessing
 {
-    public static float RectifiedMedianFactor = 3f;
+    public static float RectificationMedianFactor = 3f;
     public static float CropThreshold = 1.5f;
 
     public static void Normalize(float[] data, Size size, NormalizationType type)
@@ -76,7 +76,7 @@ internal static class DataProcessing
         {
             t[i] = Math.Abs(t[i]);
         }
-        var medianDeviation = RectifiedMedianFactor * t.Median();
+        var medianDeviation = RectificationMedianFactor * t.Median();
         //System.Diagnostics.Debug.WriteLine($"[DIST] Median deviation: {medianDeviation:F6}");
 
         // Subtract median deviation: anything within the median deviation range becomes 0

@@ -65,8 +65,10 @@ public static class Loader
 
     public static string? SelectDmsFile()
     {
-        var ofd = new Microsoft.Win32.OpenFileDialog();
-        ofd.Filter = "JSON files|*.json";
+        var ofd = new Microsoft.Win32.OpenFileDialog
+        {
+            Filter = "JSON files|*.json"
+        };
         if (ofd.ShowDialog() == true)
         {
             return ofd.FileName;
@@ -77,10 +79,12 @@ public static class Loader
 
     public static (string?, string?) SelectTwoDmsFiles()
     {
-        var ofd = new Microsoft.Win32.OpenFileDialog();
-        ofd.Filter = "JSON files|*.json";
-        ofd.Multiselect = true;
-        ofd.Title = "Select two DMS JSON files, or one JSON file with multiple DMS records";
+        var ofd = new Microsoft.Win32.OpenFileDialog
+        {
+            Filter = "JSON files|*.json",
+            Multiselect = true,
+            Title = "Select two DMS JSON files, or one JSON file with multiple DMS records"
+        };
         if (ofd.ShowDialog() == true)
         {
             if (ofd.FileNames.Length == 2)

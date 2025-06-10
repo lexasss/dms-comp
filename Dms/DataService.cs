@@ -17,7 +17,7 @@ public record class DataArray(int Rows, int Columns, float[] Values)
     }
 }
 
-public class DataService
+public static class DataService
 {
     public static bool IsSameShape(Dms dms1, Dms dms2) => dms1.Height == dms2.Height && dms1.Width == dms2.Width;
     

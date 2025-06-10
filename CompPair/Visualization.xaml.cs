@@ -7,11 +7,24 @@ namespace DmsComparison;
 
 public partial class Visualization : UserControl
 {
-    public event EventHandler<bool>? UsingAbsoluteScaleChanged;
-    public event EventHandler<double>? AbsoluteScaleChanged;
-    public event EventHandler<double>? DiffScaleChanged;
-    public event EventHandler<int>? DmsThemeChanged;
-    public event EventHandler<int>? DiffThemeChanged;
+    public class UsingAbsoluteScaleChangedEventArgs(bool isUsingAbsoluteScale) : RoutedEventArgs
+    {
+        public bool IsUsingAbsoluteScale { get; } = isUsingAbsoluteScale;
+    }
+    public class ScaleChangedEventArgs(double scale) : RoutedEventArgs
+    {
+        public double Scale { get; } = scale;
+    }
+    public class ThemeChangedEventArgs(int themeIndex) : RoutedEventArgs
+    {
+        public int ThemeIndex { get; } = themeIndex;
+    }
+
+    public event EventHandler<UsingAbsoluteScaleChangedEventArgs>? UsingAbsoluteScaleChanged;
+    public event EventHandler<ScaleChangedEventArgs>? AbsoluteScaleChanged;
+    public event EventHandler<ScaleChangedEventArgs>? DiffScaleChanged;
+    public event EventHandler<ThemeChangedEventArgs>? DmsThemeChanged;
+    public event EventHandler<ThemeChangedEventArgs>? DiffThemeChanged;
 
     public bool IsUsingAbosluteScale => chkAbsoluteScale.IsChecked == true;
     public double AbsoluteScale => sldAbsoluteScale.Value;
@@ -51,10 +64,10 @@ public partial class Visualization : UserControl
 
     // Internal
 
-    CancellationTokenSource _cts = new CancellationTokenSource();
+    CancellationTokenSource _cts = new();
     DateTime _timerStarted = DateTime.UtcNow.AddYears(-1);
 
-    bool _isInitialized = false;
+    readonly bool _isInitialized = false;
 
     public void Throttle(int interval, Action action)
     {
@@ -87,7 +100,7 @@ public partial class Visualization : UserControl
             settings.Vis_AbsoluteScale = sldAbsoluteScale.Value;
             settings.Save();
 
-            AbsoluteScaleChanged?.Invoke(this, sldAbsoluteScale.Value);
+            AbsoluteScaleChanged?.Invoke(this, new ScaleChangedEventArgs(sldAbsoluteScale.Value));
         });
     }
 
@@ -99,7 +112,7 @@ public partial class Visualization : UserControl
             settings.Vis_DiffScale = sldDiffScale.Value;
             settings.Save();
 
-            DiffScaleChanged?.Invoke(this, sldDiffScale.Value);
+            DiffScaleChanged?.Invoke(this, new ScaleChangedEventArgs(sldDiffScale.Value));
         });
     }
 
@@ -111,7 +124,7 @@ public partial class Visualization : UserControl
         if (_isInitialized)
         {
             ReportAbsoluteScaleChanged();
-            UsingAbsoluteScaleChanged?.Invoke(this, chkAbsoluteScale.IsChecked == true);
+            UsingAbsoluteScaleChanged?.Invoke(this, new UsingAbsoluteScaleChangedEventArgs(chkAbsoluteScale.IsChecked == true));
         }
     }
 
@@ -139,7 +152,7 @@ public partial class Visualization : UserControl
     {
         var settings = Properties.Settings.Default;
         settings.Vis_DmsTheme = cmbDmsThemes.SelectedIndex;
-        DmsThemeChanged?.Invoke(this, cmbDmsThemes.SelectedIndex);
+        DmsThemeChanged?.Invoke(this, new ThemeChangedEventArgs(cmbDmsThemes.SelectedIndex));
     }
 
     private void DiffThemes_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -154,6 +167,6 @@ public partial class Visualization : UserControl
     {
         var settings = Properties.Settings.Default;
         settings.Vis_DiffTheme = cmbDiffThemes.SelectedIndex;
-        DiffThemeChanged?.Invoke(this, cmbDiffThemes.SelectedIndex);
+        DiffThemeChanged?.Invoke(this, new ThemeChangedEventArgs(cmbDiffThemes.SelectedIndex));
     }
 }

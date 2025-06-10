@@ -8,37 +8,37 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
 {
     public double AbsoluteScale
     {
-        get => _absoluteScale;
+        get => field;
         set
         {
-            _absoluteScale = value;
+            field = value;
             DisplayDms();
         }
     }
 
-    public bool IsDmsReady => _dms != null;
+    public bool IsDmsReady => Dms != null;
 
     public Dms? Dms
     {
-        get => _dms;
+        get => field;
         set
         {
-            _dms = value;
+            field = value;
 
             DisplayDms();
 
             List<string> parts = [];
-            if (_dms != null)
+            if (value != null)
             {
-                parts.Add(_dms.Folder);
-                parts.Add(_dms.Filename);
-                if (!string.IsNullOrEmpty(_dms.Info))
+                parts.Add(value.Folder);
+                parts.Add(value.Filename);
+                if (!string.IsNullOrEmpty(value.Info))
                 {
-                    parts.Add(_dms.Info);
+                    parts.Add(value.Info);
                 }
-                else if (_dms.Pulses != null)
+                else if (value.Pulses != null)
                 {
-                    parts.Add(string.Join(' ', _dms.Pulses));
+                    parts.Add(string.Join(' ', value.Pulses));
                 }
             }
 
@@ -50,13 +50,13 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
 
     public int ThemeIndex
     {
-        get => _themeIndex;
+        get => field;
         set
         {
-            if (_themeIndex != value)
+            if (field != value)
             {
-                _themeIndex = value;
-                _theme = new PlotColors(Painter.DmsThemes[_themeIndex]);
+                field = value;
+                _theme = new PlotColors(Painter.DmsThemes[value]);
                 DisplayDms();
             }
         }
@@ -64,12 +64,12 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
 
     public Data.Type DataType
     {
-        get => _dataType;
+        get => field;
         set
         {
-            if (_dataType != value)
+            if (field != value)
             {
-                _dataType = value;
+                field = value;
                 DisplayDms();
             }
         }
@@ -77,12 +77,12 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
 
     public Data.Source DataSource
     {
-        get => _dataSource;
+        get => field;
         set
         {
-            if (_dataSource != value)
+            if (field != value)
             {
-                _dataSource = value;
+                field = value;
                 DisplayDms();
             }
         }
@@ -90,18 +90,23 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
 
     public Data.Filter DataFilter
     {
-        get => _dataFilter;
+        get => field;
         set
         {
-            if (_dataFilter != value)
+            if (field != value)
             {
-                _dataFilter = value;
+                field = value;
                 DisplayDms();
             }
         }
     }
 
-    public event EventHandler<Dms?>? DmsLoaded;
+    public class DmsLoadedEventArgs(Dms? dms) : EventArgs
+    {
+        public Dms? Dms { get; } = dms;
+    }
+
+    public event EventHandler<DmsLoadedEventArgs>? DmsLoaded;
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public DmsPlot()
@@ -111,13 +116,13 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
 
         var settings = Properties.Settings.Default;
 
-        _dataType = (Data.Type)settings.DataProc_DataType;
-        _dataSource = (Data.Source)settings.DataProc_DataSource;
-        _dataFilter = (Data.Filter)settings.DataProc_DataFilter;
-        _themeIndex = settings.Vis_DmsTheme;
-        _absoluteScale = settings.Vis_UseAbsoluteScale ? settings.Vis_AbsoluteScale : 0;
+        DataType = (Data.Type)settings.DataProc_DataType;
+        DataSource = (Data.Source)settings.DataProc_DataSource;
+        DataFilter = (Data.Filter)settings.DataProc_DataFilter;
+        ThemeIndex = settings.Vis_DmsTheme;
+        AbsoluteScale = settings.Vis_UseAbsoluteScale ? settings.Vis_AbsoluteScale : 0;
 
-        _theme = new PlotColors(Painter.DmsThemes[_themeIndex]);
+        _theme = new PlotColors(Painter.DmsThemes[ThemeIndex]);
 
         //RenderOptions.SetBitmapScalingMode(imgDms, BitmapScalingMode.NearestNeighbor);
         //RenderOptions.SetEdgeMode(imgDms, EdgeMode.Aliased);
@@ -135,19 +140,13 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
 
     // Internal
 
-    Dms? _dms = null;
-    double _absoluteScale;
-    int _themeIndex = 0;
-    Data.Type _dataType;
-    Data.Source _dataSource;
-    Data.Filter _dataFilter;
     PlotColors _theme;
 
     private void DisplayDms()
     {
-        if (_dms != null)
+        if (Dms != null)
         {
-            var data = DataService.GetRaw(_dms, _dataType, _dataFilter, _dataSource);
+            var data = DataService.GetRaw(Dms, DataType, DataFilter, DataSource);
             Painter.DrawPlot(imgDms, data.Rows, data.Columns, data.Values, (float)AbsoluteScale, _theme);
         }
     }
@@ -159,7 +158,7 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
         Loader.LoadDmsFile(dms =>
         {
             Dms = dms;
-            DmsLoaded?.Invoke(this, dms);
+            DmsLoaded?.Invoke(this, new DmsLoadedEventArgs(dms));
         });
     }
 }

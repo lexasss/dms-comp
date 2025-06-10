@@ -20,7 +20,7 @@ public class Dms
 
     /// Internal members used by <see cref="DmsComparison.DataService"/>
 
-    internal IonVision.Scan Scan => _scan;
+    internal IonVision.Scan Scan { get; }
     internal int Width { get; init; }
     internal int Height { get; init; }
 
@@ -31,7 +31,7 @@ public class Dms
     /// <param name="fullpath">Filename including full path</param>
     public Dms(IonVision.Scan scan, string fullpath)
     {
-        _scan = scan;
+        Scan = scan;
 
         FullPath = fullpath;
         Filename = Path.GetFileNameWithoutExtension(fullpath);
@@ -53,7 +53,7 @@ public class Dms
         Width = i;
         Height = usv.Length / i;
 
-        var str = _scan.Comments.ToString();
+        var str = Scan.Comments.ToString();
 
         List<string?> infoLines = [];
 
@@ -72,7 +72,7 @@ public class Dms
         catch { }
 
         var validComments = infoLines.Where(line => line != null);
-        Info = validComments.Count() > 0 ? string.Join("; ", validComments) : null;
+        Info = validComments.Any() ? string.Join("; ", validComments) : null;
 
         var infoFields = Info?.Split(",");
         var mixTypeRecord = infoFields?[0];
@@ -130,8 +130,7 @@ public class Dms
 
         try
         {
-            JsonSerializerOptions options = new JsonSerializerOptions() { PropertyNameCaseInsensitive = true };
-            var scans = JsonSerializer.Deserialize<IonVision.Scan[]>(json, options);
+            var scans = JsonSerializer.Deserialize<IonVision.Scan[]>(json, _serializationOptions);
             if (scans != null)
             {
                 if (scans.Length < 2)
@@ -161,6 +160,7 @@ public class Dms
 
     // Internal
 
+#pragma warning disable IDE1006 // Naming Styles
     record CommentsGeneral(string text);
     record CommentsQuick(string[] _quickComments);
 
@@ -168,6 +168,7 @@ public class Dms
     {
         public float[] Flows => pulses?.Select(p => float.Parse(p.Split('=')[1].Split(',')[0])).ToArray() ?? [];
     }
+#pragma warning restore IDE1006 // Naming Styles
 
-    readonly IonVision.Scan _scan;
+    readonly static JsonSerializerOptions _serializationOptions = new() { PropertyNameCaseInsensitive = true };
 }

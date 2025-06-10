@@ -53,25 +53,6 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         stpTools.VerticalAlignment = (VerticalAlignment)settings.UI_ToolPanel_VertAlign;
         IsDistancePanelMinimized = settings.UI_DistancePanelMinimized;
         IsVisualizationPanelMinimized = settings.UI_VisualizationPanelMinimized;
-
-        dstDistance.DataTypeChanged += (s, e) =>
-        {
-            dmsDiffPlot.DataType = e;
-            dmsPlot1.DataType = e;
-            dmsPlot2.DataType = e;
-        };
-        dstDistance.DataSourceChanged += (s, e) =>
-        {
-            dmsDiffPlot.DataSource = e;
-            dmsPlot1.DataSource = e;
-            dmsPlot2.DataSource = e;
-        };
-        dstDistance.DataFilterChanged += (s, e) =>
-        {
-            dmsDiffPlot.DataFilter = e;
-            dmsPlot1.DataFilter = e;
-            dmsPlot2.DataFilter = e;
-        };
     }
 
     // Internal
@@ -148,20 +129,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
-    private void VisOptions_AbsoluteScaleChanged(object sender, double e)
-    {
-        var absScale = visVisOptions.IsUsingAbosluteScale ? (float)e : 0;
-        dmsPlot1.AbsoluteScale = absScale;
-        dmsPlot2.AbsoluteScale = absScale;
-    }
-
-    private void VisOptions_DiffScaleChanged(object sender, double e)
-    {
-        var scale = (float)visVisOptions.DiffScale;
-        dmsDiffPlot.Scale = scale;
-    }
-
-    private void DmsPlot_DmsLoaded(object sender, Dms? e)
+    private void DmsPlot_DmsLoaded(object sender, DmsPlot.DmsLoadedEventArgs e)
     {
         dmsDiffPlot.SetDms(dmsPlot1.Dms, dmsPlot2.Dms);
 
@@ -175,10 +143,10 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
-    private void DmsDiffPlot_DmsLoaded(object sender, (Dms? dms1, Dms? dms2) e)
+    private void DmsDiffPlot_DmsLoaded(object sender, DmsDiffPlot.DmsLoadedEventArgs e)
     {
-        dmsPlot1.Dms = e.dms1;
-        dmsPlot2.Dms = e.dms2;
+        dmsPlot1.Dms = e.Dms1;
+        dmsPlot2.Dms = e.Dms2;
 
         if (dmsDiffPlot.CanComputeDifference)
         {
@@ -190,15 +158,28 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
     }
 
-    private void VisOptions_DmsThemeChanged(object sender, int e)
+    private void VisOptions_AbsoluteScaleChanged(object sender, Visualization.ScaleChangedEventArgs e)
     {
-        dmsPlot1.ThemeIndex = e;
-        dmsPlot2.ThemeIndex = e;
+        var absScale = visVisOptions.IsUsingAbosluteScale ? (float)e.Scale : 0;
+        dmsPlot1.AbsoluteScale = absScale;
+        dmsPlot2.AbsoluteScale = absScale;
     }
 
-    private void VisOptions_DiffThemeChanged(object sender, int e)
+    private void VisOptions_DiffScaleChanged(object sender, Visualization.ScaleChangedEventArgs e)
     {
-        dmsDiffPlot.ThemeIndex = e;
+        var scale = (float)visVisOptions.DiffScale;
+        dmsDiffPlot.Scale = scale;
+    }
+
+    private void VisOptions_DmsThemeChanged(object sender, Visualization.ThemeChangedEventArgs e)
+    {
+        dmsPlot1.ThemeIndex = e.ThemeIndex;
+        dmsPlot2.ThemeIndex = e.ThemeIndex;
+    }
+
+    private void VisOptions_DiffThemeChanged(object sender, Visualization.ThemeChangedEventArgs e)
+    {
+        dmsDiffPlot.ThemeIndex = e.ThemeIndex;
     }
 
     private void Dms1CopyButton_Click(object sender, RoutedEventArgs e)
@@ -223,5 +204,26 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         {
             FlickerElement(lblDms2Copied, 2000);
         }
+    }
+
+    private void dstDistance_DataTypeChanged(object sender, Distance.DataTypeChangedEventArgs e)
+    {
+        dmsDiffPlot.DataType = e.Type;
+        dmsPlot1.DataType = e.Type;
+        dmsPlot2.DataType = e.Type;
+    }
+
+    private void dstDistance_DataSourceChanged(object sender, Distance.DataSourceChangedEventArgs e)
+    {
+        dmsDiffPlot.DataSource = e.Source;
+        dmsPlot1.DataSource = e.Source;
+        dmsPlot2.DataSource = e.Source;
+    }
+
+    private void dstDistance_DataFilterChanged(object sender, Distance.DataFilterChangedEventArgs e)
+    {
+        dmsDiffPlot.DataFilter = e.Filter;
+        dmsPlot1.DataFilter = e.Filter;
+        dmsPlot2.DataFilter = e.Filter;
     }
 }

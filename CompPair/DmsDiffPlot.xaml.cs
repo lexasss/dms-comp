@@ -9,23 +9,23 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
 {
     public double Scale
     {
-        get => _scale;
+        get => field;
         set
         {
-            _scale = value;
+            field = value;
             DisplayDifference();
         }
     }
 
     public int ThemeIndex
     {
-        get => _themeIndex;
+        get => field;
         set
         {
-            if (_themeIndex != value)
+            if (field != value)
             {
-                _themeIndex = value;
-                _theme = new PlotColors(Painter.DiffThemes[_themeIndex]);
+                field = value;
+                _theme = new PlotColors(Painter.DiffThemes[value]);
                 DisplayDifference();
             }
         }
@@ -33,12 +33,12 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
 
     public Data.Type DataType
     {
-        get => _dataType;
+        get => field;
         set
         {
-            if (_dataType != value)
+            if (field != value)
             {
-                _dataType = value;
+                field = value;
                 DisplayDifference();
             }
         }
@@ -46,12 +46,12 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
 
     public Data.Source DataSource
     {
-        get => _dataSource;
+        get => field;
         set
         {
-            if (_dataSource != value)
+            if (field != value)
             {
-                _dataSource = value;
+                field = value;
                 DisplayDifference();
             }
         }
@@ -59,12 +59,12 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
 
     public Data.Filter DataFilter
     {
-        get => _dataFilter;
+        get => field;
         set
         {
-            if (_dataFilter != value)
+            if (field != value)
             {
-                _dataFilter = value;
+                field = value;
                 DisplayDifference();
             }
         }
@@ -72,7 +72,13 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
 
     public bool CanComputeDifference => _dms1 != null && _dms2 != null && DataService.IsSameShape(_dms1, _dms2);
 
-    public event EventHandler<(Dms?, Dms?)>? DmsLoaded;
+    public class DmsLoadedEventArgs(Dms? dms1, Dms? dms2) : EventArgs
+    {
+        public Dms? Dms1 { get; } = dms1;
+        public Dms? Dms2 { get; } = dms2;
+    }
+
+    public event EventHandler<DmsLoadedEventArgs>? DmsLoaded;
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public DmsDiffPlot()
@@ -82,13 +88,14 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
 
         var settings = Properties.Settings.Default;
 
-        _dataType = (Data.Type)settings.DataProc_DataType;
-        _dataSource = (Data.Source)settings.DataProc_DataSource;
-        _dataFilter = (Data.Filter)settings.DataProc_DataFilter;
-        _themeIndex = settings.Vis_DiffTheme;
-        _theme = new PlotColors(Painter.DiffThemes[_themeIndex]);
+        Scale = settings.Vis_DiffScale;
+        DataType = (Data.Type)settings.DataProc_DataType;
+        DataSource = (Data.Source)settings.DataProc_DataSource;
+        DataFilter = (Data.Filter)settings.DataProc_DataFilter;
+        ThemeIndex = settings.Vis_DiffTheme;
 
-        _scale = settings.Vis_DiffScale;
+        _theme = new PlotColors(Painter.DiffThemes[ThemeIndex]);
+
     }
 
     public bool CopyToMemory()
@@ -116,11 +123,6 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
 
     Dms? _dms1 = null;
     Dms? _dms2 = null;
-    double _scale = 4;
-    int _themeIndex = 0;
-    Data.Type _dataType;
-    Data.Source _dataSource;
-    Data.Filter _dataFilter;
     PlotColors _theme;
 
     private void DisplayDifference()
@@ -133,7 +135,7 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
 
         if (DataService.IsSameShape(_dms1, _dms2))
         {
-            var diff = DataService.GetDifference(_dms1, _dms2, _dataType, _dataFilter, _dataSource);
+            var diff = DataService.GetDifference(_dms1, _dms2, DataType, DataFilter, DataSource);
             if (diff != null)
             {
                 Painter.DrawPlot(imgDmsDiff, diff.Rows, diff.Columns, diff.Values, (float)(100.1 - Scale * 10), _theme);
@@ -152,7 +154,7 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
     {
         Loader.LoadTwoDmsFiles((dms1, dms2) => {
             SetDms(dms1, dms2);
-            DmsLoaded?.Invoke(this, (dms1, dms2));
+            DmsLoaded?.Invoke(this, new DmsLoadedEventArgs(dms1, dms2));
         });
     }
 }

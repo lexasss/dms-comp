@@ -6,6 +6,7 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib" 
              xmlns:local="clr-namespace:DmsComparison"
              xmlns:dms="clr-namespace:DmsComparison.Data;assembly=Dms"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}"
              mc:Ignorable="d" 
              Background="White"
              d:DesignHeight="290" d:DesignWidth="300">
@@ -85,9 +86,8 @@
             <Separator/>
             
             <Label Style="{StaticResource Header}" Content="Pre-processing"/>
-            <CheckBox x:Name="chkRectify"
-                  Content="Rectify"
-                  IsChecked="{Binding ShouldRectify}"/>
+            <CheckBox Content="Rectify"
+                      IsChecked="{Binding ShouldRectify}"/>
             <Separator/>
             <Label Style="{StaticResource Header}" Content="Normalization"/>
             <StackPanel x:Name="stpNormalizationType">

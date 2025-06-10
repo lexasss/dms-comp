@@ -9,10 +9,10 @@ public partial class Distance : UserControl, INotifyPropertyChanged
 {
     public bool ShouldRectify
     {
-        get => _shouldRectify;
+        get => field;
         set
         {
-            _shouldRectify = value;
+            field = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShouldRectify)));
             Update();
         }
@@ -20,45 +20,58 @@ public partial class Distance : UserControl, INotifyPropertyChanged
 
     public Data.Type DataType
     {
-        get => _dataType;
+        get => field;
         set
         {
-            _dataType = value;
+            field = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DataType)));
-            DataTypeChanged?.Invoke(this, _dataType);
+            DataTypeChanged?.Invoke(this, new DataTypeChangedEventArgs(value));
             Update(_dms1, _dms2);
         }
     }
 
     public Data.Source DataSource
     {
-        get => _dataSource;
+        get => field;
         set
         {
-            _dataSource = value;
+            field = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DataSource)));
-            DataSourceChanged?.Invoke(this, _dataSource);
+            DataSourceChanged?.Invoke(this, new DataSourceChangedEventArgs(value));
             Update(_dms1, _dms2);
         }
     }
 
     public Data.Filter DataFilter
     {
-        get => _dataFilter;
+        get => field;
         set
         {
-            _dataFilter = value;
+            field = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DataFilter)));
-            DataFilterChanged?.Invoke(this, _dataFilter);
+            DataFilterChanged?.Invoke(this, new DataFilterChangedEventArgs(value));
             Update(_dms1, _dms2);
         }
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public event EventHandler<Data.Type>? DataTypeChanged;
-    public event EventHandler<Data.Source>? DataSourceChanged;
-    public event EventHandler<Data.Filter>? DataFilterChanged;
+    public class DataTypeChangedEventArgs(Data.Type type) : EventArgs
+    {
+        public Data.Type Type { get; } = type;
+    }
+    public class DataSourceChangedEventArgs(Data.Source source) : EventArgs
+    {
+        public Data.Source Source { get; } = source;
+    }
+    public class DataFilterChangedEventArgs(Data.Filter filter) : EventArgs
+    {
+        public Data.Filter Filter { get; } = filter;
+    }
+
+    public event EventHandler<DataTypeChangedEventArgs>? DataTypeChanged;
+    public event EventHandler<DataSourceChangedEventArgs>? DataSourceChanged;
+    public event EventHandler<DataFilterChangedEventArgs>? DataFilterChanged;
 
     public Distance()
     {
@@ -67,15 +80,13 @@ public partial class Distance : UserControl, INotifyPropertyChanged
 
         var settings = Properties.Settings.Default;
         _normalizationType = (NormalizationType)settings.DataProc_Normalization;
-        _shouldRectify = settings.DataProc_Rectification;
-        _dataType = (Data.Type)settings.DataProc_DataType;
-        _dataSource = (Data.Source)settings.DataProc_DataSource;
-        _dataFilter = (Data.Filter)settings.DataProc_DataFilter;
+        ShouldRectify = settings.DataProc_Rectification;
+        DataType = (Data.Type)settings.DataProc_DataType;
+        DataSource = (Data.Source)settings.DataProc_DataSource;
+        DataFilter = (Data.Filter)settings.DataProc_DataFilter;
 
         CreateUiListOfAlgorithms(settings.Alg_Name);
         CreateUiListOfNormalizations();
-
-        chkRectify.IsChecked = _shouldRectify;
     }
 
     public void Clear()
@@ -107,11 +118,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
     // Internal
 
     Algorithm? _algorithm = null;
-    bool _shouldRectify;
     NormalizationType _normalizationType;
-    Data.Type _dataType;
-    Data.Source _dataSource;
-    Data.Filter _dataFilter;
 
     Dms? _dms1 = null;
     Dms? _dms2 = null;
@@ -155,10 +162,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
             stpAlgorithms.Children.Add(rdb);
         }
 
-        if (_algorithm == null)
-        {
-            _algorithm = (Algorithm?)(stpAlgorithms.Children[0] as RadioButton)?.Tag;
-        }
+        _algorithm ??= (Algorithm?)(stpAlgorithms.Children[0] as RadioButton)?.Tag;
     }
 
     private void CreateUiListOfNormalizations()
@@ -192,10 +196,10 @@ public partial class Distance : UserControl, INotifyPropertyChanged
         var settings = Properties.Settings.Default;
         settings.Alg_Name = _algorithm?.Name ?? "";
         settings.DataProc_Normalization = (int)_normalizationType;
-        settings.DataProc_Rectification = _shouldRectify;
-        settings.DataProc_DataType = (int)_dataType;
-        settings.DataProc_DataSource = (int)_dataSource;
-        settings.DataProc_DataFilter = (int)_dataFilter;
+        settings.DataProc_Rectification = ShouldRectify;
+        settings.DataProc_DataType = (int)DataType;
+        settings.DataProc_DataSource = (int)DataSource;
+        settings.DataProc_DataFilter = (int)DataFilter;
         settings.Save();
 
         txbDistance.Text = "";
@@ -205,7 +209,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
             return;
         }
 
-        double result = _algorithm.ComputeDistance(_data1, _data2, _size, new Options(_shouldRectify, _normalizationType, false));
+        double result = _algorithm.ComputeDistance(_data1, _data2, _size, new Options(ShouldRectify, _normalizationType, false));
 
         txbDistance.Text = $"{result:F4}";
     }
