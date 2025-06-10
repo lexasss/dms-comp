@@ -18,10 +18,11 @@ public class Dms
     public string Date { get; init; }
     public string Time { get; init; }
 
-    public IonVision.Scan Scan => _scan;
-    public int Width { get; init; }
-    public int Height { get; init; }
-    public float[] Data => _scan.MeasurementData.IntensityTop;
+    /// Internal members used by <see cref="DmsComparison.DataService"/>
+
+    internal IonVision.Scan Scan => _scan;
+    internal int Width { get; init; }
+    internal int Height { get; init; }
 
     /// <summary>
     /// Constructor

@@ -1,19 +1,58 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Windows;
 using System.Windows.Input;
 
 namespace DmsComparison;
 
-public partial class MainWindow : Window
+public partial class MainWindow : Window, INotifyPropertyChanged
 {
+    public bool IsDistancePanelMinimized
+    {
+        get => field;
+        set
+        {
+            field = value;
+            if (value)
+            {
+                dstDistance.Height = 32;
+            }
+            else
+            {
+                dstDistance.ClearValue(HeightProperty);
+            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDistancePanelMinimized)));
+        }
+    }
+
+    public bool IsVisualizationPanelMinimized
+    {
+        get => field;
+        set
+        {
+            field = value;
+            if (value)
+            {
+                visVisOptions.Height = 32;
+            }
+            else
+            {
+                visVisOptions.ClearValue(HeightProperty);
+            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsVisualizationPanelMinimized)));
+        }
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
     public MainWindow()
     {
         InitializeComponent();
 
-        DataContext = this;
-
         var settings = Properties.Settings.Default;
         stpTools.HorizontalAlignment = (HorizontalAlignment)settings.UI_ToolPanel_HorzAlign;
         stpTools.VerticalAlignment = (VerticalAlignment)settings.UI_ToolPanel_VertAlign;
+        IsDistancePanelMinimized = settings.UI_DistancePanelMinimized;
+        IsVisualizationPanelMinimized = settings.UI_VisualizationPanelMinimized;
 
         dstDistance.DataTypeChanged += (s, e) =>
         {
@@ -75,6 +114,8 @@ public partial class MainWindow : Window
         var settings = Properties.Settings.Default;
         settings.UI_ToolPanel_HorzAlign = (int)stpTools.HorizontalAlignment;
         settings.UI_ToolPanel_VertAlign = (int)stpTools.VerticalAlignment;
+        settings.UI_DistancePanelMinimized = IsDistancePanelMinimized;
+        settings.UI_VisualizationPanelMinimized = IsVisualizationPanelMinimized;
         settings.Save();
     }
 

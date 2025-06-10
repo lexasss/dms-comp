@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DmsComparison"
         mc:Ignorable="d"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
         Title="DMS Comparator"
         Height="930" Width="900"
         MinHeight="642" MinWidth="800"
@@ -96,21 +97,50 @@
                     MouseDown="ToolPanel_MouseDown"
                     MouseUp="ToolPanel_MouseUp"
                     MouseMove="ToolPanel_MouseMove">
+            <StackPanel.Resources>
+                <Style x:Key="shrink" TargetType="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
+                    <Setter Property="Width" Value="24"/>
+                    <Setter Property="Height" Value="24"/>
+                    <Setter Property="Margin" Value="4"/>
+                    <Setter Property="VerticalAlignment" Value="Top"/>
+                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                    <Setter Property="Content" Value="⏶"/>
+                    <Style.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="12"/>
+                        </Style>
+                    </Style.Resources>
+                    <Style.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter Property="Content" Value="⏷"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Resources>
+            
             <Border Padding="4"
                     Background="#FFF1FBF7"
                     BorderBrush="#FF8A8A8A"
                     BorderThickness="3">
-                <local:Distance x:Name="dstDistance"/>
+                <Grid>
+                    <local:Distance x:Name="dstDistance"/>
+                    <ToggleButton Style="{StaticResource shrink}"
+                                  IsChecked="{Binding IsDistancePanelMinimized}"/>
+                </Grid>
             </Border>
             <Border Padding="4"
                     Background="#FFF1FBF7"
                     BorderBrush="#FF8A8A8A"
                     BorderThickness="3">
-                <local:Visualization x:Name="visVisOptions"
-                                     AbsoluteScaleChanged="VisOptions_AbsoluteScaleChanged"
-                                     DiffScaleChanged="VisOptions_DiffScaleChanged"
-                                     DmsThemeChanged="VisOptions_DmsThemeChanged"
-                                     DiffThemeChanged="VisOptions_DiffThemeChanged"/>
+                <Grid>
+                    <local:Visualization x:Name="visVisOptions"
+                                         AbsoluteScaleChanged="VisOptions_AbsoluteScaleChanged"
+                                         DiffScaleChanged="VisOptions_DiffScaleChanged"
+                                         DmsThemeChanged="VisOptions_DmsThemeChanged"
+                                         DiffThemeChanged="VisOptions_DiffThemeChanged"/>
+                    <ToggleButton Style="{StaticResource shrink}"
+                                  IsChecked="{Binding IsVisualizationPanelMinimized}"/>
+                </Grid>
             </Border>
         </StackPanel>
     </Grid>
