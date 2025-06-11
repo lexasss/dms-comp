@@ -264,8 +264,8 @@ public class Program
                         if (dms1 == dms2 || dms1 == null || dms2 == null || !DataService.IsSameShape(dms1, dms2))
                             continue;
 
-                        DataArray data1 = DataService.GetRaw(dms1);
-                        DataArray data2 = DataService.GetRaw(dms2);
+                        DataArray data1 = DataService.GetRaw(dms1, Data.Type.Raw, Data.Source.Positive, Data.Filter.Unfiltered);
+                        DataArray data2 = DataService.GetRaw(dms2, Data.Type.Raw, Data.Source.Positive, Data.Filter.Unfiltered);
 
                         var dist = algorithm.ComputeDistance(data1.Values, data2.Values, new Size(data1.Columns, data2.Rows), options);
                         distanceSum += dist;

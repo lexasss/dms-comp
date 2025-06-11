@@ -1,23 +1,10 @@
 ﻿using LinqStatistics;
 
-namespace DmsComparison.Data;
-
-public enum DataLimitType
-{
-    Absolute,
-    RelativeToMinimum,
-    RelativeToMedian,
-    Percentage
-}
-
-public record class FilterSettings(float? From, float? To, DataLimitType LimitType = DataLimitType.Absolute)
-{
-    public static FilterSettings Default => new(null, null, DataLimitType.Absolute);
-}
+namespace DmsComparison;
 
 internal static class FilterService
 {
-    public static float[] ApplyFilter(float[] data, float? from, float? to, DataLimitType limitType)
+    public static float[] ApplyFilter(float[] data, float? from, float? to, Data.Limits limits)
     {
         if (from == null && to == null)
             return data;
@@ -29,18 +16,18 @@ internal static class FilterService
         float low = from ?? 0;
         float high = to ?? range.Max;
 
-        if (limitType == DataLimitType.RelativeToMinimum)
+        if (limits == Data.Limits.RelativeToMinimum)
         {
             low = range.Min + (from ?? 0);
             high = range.Min + (to ?? (range.Max - range.Min));
         }
-        else if (limitType == DataLimitType.RelativeToMedian)
+        else if (limits == Data.Limits.RelativeToMedian)
         {
             float median = data.Median();
             low = median + (from ?? 0);
             high = median + (to ?? (range.Max - median));
         }
-        else if (limitType == DataLimitType.Percentage)
+        else if (limits == Data.Limits.Percentage)
         {
             float interval = range.Max - range.Min;
             low = range.Min + (interval * (from ?? 0) / 100);

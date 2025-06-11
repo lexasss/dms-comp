@@ -78,13 +78,13 @@ public partial class Distance : UserControl, INotifyPropertyChanged
         }
     }
 
-    public Data.DataLimitType DataFilterLimitType
+    public Data.Limits DataFilterLimits
     {
         get => field;
         set
         {
             field = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DataFilterLimitType)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DataFilterLimits)));
             DataFilterSettingsChanged?.Invoke(this, new DataFilterSettingsChangedEventArgs(GetFilterSettings()));
             Update(_dms1, _dms2);
         }
@@ -127,7 +127,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
         DataFilter = (Data.Filter)settings.DataProc_DataFilter;
         DataFilterFrom = settings.DataProc_FilterSettings_From;
         DataFilterTo = settings.DataProc_FilterSettings_To;
-        DataFilterLimitType = (Data.DataLimitType)settings.DataProc_FilterSettings_LimitType;
+        DataFilterLimits = (Data.Limits)settings.DataProc_FilterSettings_LimitType;
 
         CreateUiListOfAlgorithms(settings.Alg_Name);
         CreateUiListOfNormalizations();
@@ -171,7 +171,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
     float[]? _data2 = null;
     Size? _size = null;
 
-    private Data.FilterSettings GetFilterSettings() => new(DataFilterFrom, DataFilterTo, DataFilterLimitType);
+    private Data.FilterSettings GetFilterSettings() => new(DataFilterFrom, DataFilterTo, DataFilterLimits);
 
     private void CreateUiListOfAlgorithms(string selectedAlgorithm)
     {
@@ -251,7 +251,7 @@ public partial class Distance : UserControl, INotifyPropertyChanged
         settings.DataProc_DataFilter = (int)DataFilter;
         settings.DataProc_FilterSettings_From = DataFilterFrom;
         settings.DataProc_FilterSettings_To = DataFilterTo;
-        settings.DataProc_FilterSettings_LimitType = (int)DataFilterLimitType;
+        settings.DataProc_FilterSettings_LimitType = (int)DataFilterLimits;
         settings.Save();
 
         txbDistance.Text = "";

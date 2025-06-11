@@ -1,23 +1,21 @@
-﻿using DmsComparison.Data;
+﻿namespace DmsComparison;
 
-namespace DmsComparison;
-
-internal record class DataGradient(int Rows, int Columns, System.Windows.Vector[] Values);
-
-public record class DataArray(int Rows, int Columns, float[] Values)
+internal record class DataGradient(int Rows, int Columns, System.Windows.Vector[] Values)
 {
-    internal static DataArray FromGradient(DataGradient gradient)
+    public DataArray ToDataArray()
     {
-        int size = gradient.Columns * gradient.Rows;
+        int size = Columns * Rows;
         var result = new float[size];
         for (int i = 0; i < size; i++)
         {
-            var v = gradient.Values[i];
+            var v = Values[i];
             result[i] = (float)(Math.Abs(v.X) + Math.Abs(v.Y)) / 2;
         }
-        return new DataArray(gradient.Rows, gradient.Columns, result);
+        return new DataArray(Rows, Columns, result);
     }
 }
+
+public record class DataArray(int Rows, int Columns, float[] Values);
 
 public static class DataService
 {
@@ -27,21 +25,15 @@ public static class DataService
         Data.Type type,
         Data.Source source,
         Data.Filter filter,
-        FilterSettings filterSettings)
+        Data.FilterSettings? filterSettings = null)
     {
-        var raw = source switch
-        {
-            Data.Source.Positive => dms.Scan.MeasurementData.IntensityTop,
-            Data.Source.Negative => dms.Scan.MeasurementData.IntensityBottom.Select(v => -v).ToArray(),
-            _ => throw new NotSupportedException($"""Data source "{source}" is not supported.""")
-        };
-
-        var filtered = ApplyFilter(raw, filter, filterSettings);
+        var raw = RetrieveData(dms, source);
+        var filtered = ApplyFilter(raw, filter, filterSettings ?? Data.FilterSettings.Default);
 
         return type switch
         {
             Data.Type.Raw => new DataArray(dms.Height, dms.Width, filtered),
-            Data.Type.Gradient => DataArray.FromGradient(GetGradient(filtered, dms.Height, dms.Width)),
+            Data.Type.Gradient => GetGradient(filtered, dms.Height, dms.Width).ToDataArray(),
             _ => throw new NotSupportedException($"""Data type "{type}" is not supported.""")
         };
     }
@@ -50,20 +42,13 @@ public static class DataService
         Data.Type type,
         Data.Source source,
         Data.Filter filter,
-        FilterSettings filterSettings)
+        Data.FilterSettings filterSettings)
     {
         if (dms1 == null || dms2 == null || !IsSameShape(dms1, dms2))
             return null;
 
-        var m1 = dms1.Scan.MeasurementData;
-        var m2 = dms2.Scan.MeasurementData;
-        
-        var (raw1, raw2) = source switch
-        {
-            Data.Source.Positive => (m1.IntensityTop, m2.IntensityTop),
-            Data.Source.Negative => (m1.IntensityBottom, m2.IntensityBottom),
-            _ => throw new NotSupportedException($"""Data source "{source}" is not supported.""")
-        };
+        var raw1 = RetrieveData(dms1, source);
+        var raw2 = RetrieveData(dms2, source);
 
         var filtered1 = ApplyFilter(raw1, filter, filterSettings);
         var filtered2 = ApplyFilter(raw2, filter, filterSettings);
@@ -80,6 +65,26 @@ public static class DataService
     }
 
     // Internal
+
+    private static float[] RetrieveData(Dms dms, Data.Source source)
+    {
+        return source switch
+        {
+            Data.Source.Positive => dms.Scan.MeasurementData.IntensityTop,
+            Data.Source.Negative => dms.Scan.MeasurementData.IntensityBottom.Select(v => -v).ToArray(),
+            _ => throw new NotSupportedException($"""Data source "{source}" is not supported.""")
+        };
+    }
+
+    private static float[] ApplyFilter(float[] data, Data.Filter filter, Data.FilterSettings settings)
+    {
+        if (filter == Data.Filter.Unfiltered)
+            return data;
+        else if (filter == Data.Filter.Range)
+            return FilterService.ApplyFilter(data, settings.From, settings.To, settings.Limits);
+        else
+            throw new NotSupportedException($"""Filter "{filter}" is not supported.""");
+    }
 
     private static DataArray GetDifference(float[] array1, float[] array2, int rows, int columns)
     {
@@ -125,15 +130,5 @@ public static class DataService
         }
 
         return new DataGradient(height, width, array);
-    }
-
-    private static float[] ApplyFilter(float[] data, Data.Filter filter, FilterSettings settings)
-    {
-        if (filter == Data.Filter.Unfiltered)
-            return data;
-        else if (filter == Data.Filter.LowValues)
-            return FilterService.ApplyFilter(data, settings.From, settings.To, settings.LimitType);
-        else
-            throw new NotSupportedException($"""Filter "{filter}" is not supported.""");
     }
 }

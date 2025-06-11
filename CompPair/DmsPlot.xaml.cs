@@ -1,5 +1,4 @@
-﻿using DmsComparison.Data;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows.Input;
 
@@ -102,7 +101,7 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
         }
     }
 
-    public FilterSettings DataFilterSettings
+    public Data.FilterSettings DataFilterSettings
     {
         get => field;
         set
@@ -134,10 +133,10 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
         DataType = (Data.Type)settings.DataProc_DataType;
         DataSource = (Data.Source)settings.DataProc_DataSource;
         DataFilter = (Data.Filter)settings.DataProc_DataFilter;
-        DataFilterSettings = new FilterSettings(
+        DataFilterSettings = new Data.FilterSettings(
             settings.DataProc_FilterSettings_From,
             settings.DataProc_FilterSettings_To,
-            (DataLimitType)settings.DataProc_FilterSettings_LimitType);
+            (Data.Limits)settings.DataProc_FilterSettings_LimitType);
         ThemeIndex = settings.Vis_DmsTheme;
 
         _theme = new PlotColors(Painter.DmsThemes[ThemeIndex]);

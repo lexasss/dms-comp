@@ -50,11 +50,11 @@
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
 
-        <ObjectDataProvider x:Key="DmsDataFilterLimitType"
+        <ObjectDataProvider x:Key="DmsDataFilterLimits"
                             ObjectType="{x:Type sys:Enum}"
                             MethodName="GetValues">
             <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="dms:DataLimitType"/>
+                <x:Type TypeName="dms:Limits"/>
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
     </UserControl.Resources>
@@ -95,8 +95,8 @@
                     <TextBox Text="{Binding DataFilterFrom, Mode=TwoWay}" KeyUp="FilterSettings_KeyUp"/>
                     <TextBox Text="{Binding DataFilterTo, Mode=TwoWay}" KeyUp="FilterSettings_KeyUp"/>
                 </UniformGrid>
-                <ComboBox ItemsSource="{Binding Source={StaticResource DmsDataFilterLimitType}}"
-                          SelectedItem="{Binding DataFilterLimitType, Mode=TwoWay}"
+                <ComboBox ItemsSource="{Binding Source={StaticResource DmsDataFilterLimits}}"
+                          SelectedItem="{Binding DataFilterLimits, Mode=TwoWay}"
                           Margin="0,4"/>
             </StackPanel>
 
