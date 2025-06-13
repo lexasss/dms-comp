@@ -17,10 +17,10 @@ public class Dms
     public string Filename { get; init; }
     public string Date { get; init; }
     public string Time { get; init; }
+    public IonVision.Scan Scan { get; }
 
-    /// Internal members used by <see cref="DmsComparison.DataService"/>
+    /// Internal members used by <see cref="DataService"/>
 
-    internal IonVision.Scan Scan { get; }
     internal int Width { get; init; }
     internal int Height { get; init; }
 

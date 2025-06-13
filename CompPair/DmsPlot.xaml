@@ -5,10 +5,32 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:DmsComparison"
              mc:Ignorable="d" 
+             DataContext="{Binding RelativeSource={RelativeSource Self}}"
              d:DesignHeight="450" d:DesignWidth="800">
     
     <UserControl.Resources>
         <local:BoolToVisibilityConverter x:Key="bool2vis"/>
+
+        <Style x:Key="shrink" TargetType="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Content" Value="🠊"/>
+            <Setter Property="FontFamily" Value="Arial"/>
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="12"/>
+                </Style>
+            </Style.Resources>
+            <Style.Triggers>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Content" Value="🠈" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </UserControl.Resources>
     
     <Grid>
@@ -47,5 +69,121 @@
                Visibility="{Binding IsDmsReady, Converter={StaticResource bool2vis}}"
                HorizontalAlignment="Center"
                VerticalAlignment="Bottom"/>
+
+        <StackPanel x:Name="stpScanDataProperties"
+                    Orientation="Horizontal"
+                    Background="#64FFFFFF"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Visibility="{Binding IsDmsReady, Converter={StaticResource bool2vis}}">
+            <ToggleButton Style="{StaticResource shrink}"
+                          ToolTip="Toggle visibility of scan data properties"
+                          IsChecked="{Binding IsScanDataPropertiesPanelMinimized}"/>
+
+            <Grid DataContext="{Binding Dms}"
+                  Width="160"
+                  Margin="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Row="0" Grid.ColumnSpan="2"
+                        BorderBrush="#FF8A8A8A"
+                        BorderThickness="0,0,0,1">
+                    <Label Content="Sample"
+                           HorizontalContentAlignment="Center"
+                           FontWeight="Bold"/>
+                </Border>
+                <Label Grid.Row="1" Grid.Column="0">Flow rate</Label>
+                <Label Grid.Row="1" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sample.Flow.Avg}" ContentStringFormat="{}{0} sccm"/>
+                <Label Grid.Row="2" Grid.Column="0">Humidity</Label>
+                <Label Grid.Row="2" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sample.Humidity.Avg}" ContentStringFormat="{}{0}%"/>
+                <Label Grid.Row="3" Grid.Column="0">Temperature</Label>
+                <Label Grid.Row="3" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sample.Temperature.Avg}" ContentStringFormat="{}{0}°"/>
+                <Label Grid.Row="4" Grid.Column="0">Pressure</Label>
+                <Label Grid.Row="4" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sample.Pressure.Avg}" ContentStringFormat="{}{0} mbar"/>
+                <Label Grid.Row="5" Grid.Column="0">Pump</Label>
+                <Label Grid.Row="5" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sample.PumpPWM.Avg}" ContentStringFormat="{}{0}"/>
+            </Grid>
+
+            <Separator Margin="8,0"/>
+
+            <Grid DataContext="{Binding Dms}"
+                  Width="160"
+                  Margin="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Row="0" Grid.ColumnSpan="2"
+                        BorderBrush="#FF8A8A8A"
+                        BorderThickness="0,0,0,1">
+                    <Label Content="Sensor"
+                           HorizontalContentAlignment="Center"
+                           FontWeight="Bold"/>
+                </Border>
+                <Label Grid.Row="1" Grid.Column="0">Flow rate</Label>
+                <Label Grid.Row="1" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sensor.Flow.Avg}" ContentStringFormat="{}{0} sccm"/>
+                <Label Grid.Row="2" Grid.Column="0">Humidity</Label>
+                <Label Grid.Row="2" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sensor.Humidity.Avg}" ContentStringFormat="{}{0}%"/>
+                <Label Grid.Row="3" Grid.Column="0">Temperature</Label>
+                <Label Grid.Row="3" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sensor.Temperature.Avg}" ContentStringFormat="{}{0}°"/>
+                <Label Grid.Row="4" Grid.Column="0">Pressure</Label>
+                <Label Grid.Row="4" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sensor.Pressure.Avg}" ContentStringFormat="{}{0} mbar"/>
+                <Label Grid.Row="5" Grid.Column="0">Pump</Label>
+                <Label Grid.Row="5" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sensor.PumpPWM.Avg}" ContentStringFormat="{}{0}"/>
+            </Grid>
+
+            <Separator Margin="8,0"/>
+
+            <Grid DataContext="{Binding Dms}"
+                  Width="160"
+                  Margin="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Row="0" Grid.ColumnSpan="2"
+                        BorderBrush="#FF8A8A8A"
+                        BorderThickness="0,0,0,1">
+                    <Label Content="Ambient"
+                           HorizontalContentAlignment="Center"
+                           FontWeight="Bold"/>
+                </Border>
+                <Label Grid.Row="2" Grid.Column="0">Humidity</Label>
+                <Label Grid.Row="2" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Ambient.Humidity.Avg}" ContentStringFormat="{}{0}%"/>
+                <Label Grid.Row="3" Grid.Column="0">Temperature</Label>
+                <Label Grid.Row="3" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Ambient.Temperature.Avg}" ContentStringFormat="{}{0}°"/>
+                <Label Grid.Row="4" Grid.Column="0">Flow rate</Label>
+                <Label Grid.Row="4" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Ambient.Pressure.Avg}" ContentStringFormat="{}{0} mbar"/>
+            </Grid>
+        </StackPanel>
     </Grid>
 </UserControl>

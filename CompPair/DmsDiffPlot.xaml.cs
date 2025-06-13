@@ -97,7 +97,6 @@ public partial class DmsDiffPlot : UserControl, INotifyPropertyChanged
     public DmsDiffPlot()
     {
         InitializeComponent();
-        DataContext = this;
 
         var settings = Properties.Settings.Default;
 

@@ -1,23 +1,12 @@
 ﻿using System.ComponentModel;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace DmsComparison;
 
 public partial class DmsPlot : UserControl, INotifyPropertyChanged
 {
-    public double AbsoluteScale
-    {
-        get => field;
-        set
-        {
-            field = value;
-            DisplayDms();
-        }
-    }
-
-    public bool IsDmsReady => Dms != null;
-
     public Dms? Dms
     {
         get => field;
@@ -45,6 +34,17 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
             lblDms.Content = string.Join(" | ", parts);
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDmsReady)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Dms)));
+        }
+    }
+
+    public double AbsoluteScale
+    {
+        get => field;
+        set
+        {
+            field = value;
+            DisplayDms();
         }
     }
 
@@ -114,6 +114,32 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
         }
     }
 
+    public bool IsScanDataPropertiesPanelMinimized
+    {
+        get => field;
+        set
+        {
+            if (field != value)
+            {
+                field = value;
+                if (value)
+                {
+                    stpScanDataProperties.Width = 32;
+                    stpScanDataProperties.Background = Brushes.Transparent;
+                }
+                else
+                {
+                    stpScanDataProperties.ClearValue(WidthProperty);
+                    stpScanDataProperties.Background = new SolidColorBrush(Color.FromArgb(64, 255, 255, 255));
+                }
+
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsScanDataPropertiesPanelMinimized)));
+            }
+        }
+    }
+
+    public bool IsDmsReady => Dms != null;
+
     public class DmsLoadedEventArgs(Dms? dms) : EventArgs
     {
         public Dms? Dms { get; } = dms;
@@ -125,7 +151,8 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
     public DmsPlot()
     {
         InitializeComponent();
-        DataContext = this;
+
+        IsScanDataPropertiesPanelMinimized = true;
 
         var settings = Properties.Settings.Default;
 
