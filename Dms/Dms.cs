@@ -103,7 +103,7 @@ public class Dms
 
         try
         {
-            var scan = JsonSerializer.Deserialize<IonVision.Scan>(json);
+            var scan = JsonSerializer.Deserialize<IonVision.Scan>(json, _serializationOptions);
             if (scan != null)
             {
                 return new Dms(scan, filename);

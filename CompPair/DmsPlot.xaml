@@ -10,14 +10,14 @@
     
     <UserControl.Resources>
         <local:BoolToVisibilityConverter x:Key="bool2vis"/>
+        <local:ValueStateToBrushConverter x:Key="state2brush"/>
 
         <Style x:Key="shrink" TargetType="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
             <Setter Property="Width" Value="24"/>
             <Setter Property="Height" Value="24"/>
-            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Margin" Value="6"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
-            <Setter Property="HorizontalAlignment" Value="Right"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="Content" Value="🠊"/>
             <Setter Property="FontFamily" Value="Arial"/>
             <Style.Resources>
@@ -70,120 +70,219 @@
                HorizontalAlignment="Center"
                VerticalAlignment="Bottom"/>
 
-        <StackPanel x:Name="stpScanDataProperties"
-                    Orientation="Horizontal"
-                    Background="#64FFFFFF"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Top"
-                    Visibility="{Binding IsDmsReady, Converter={StaticResource bool2vis}}">
-            <ToggleButton Style="{StaticResource shrink}"
+        <Grid x:Name="stpScanDataProperties"
+              HorizontalAlignment="Right"
+              VerticalAlignment="Top"
+              Visibility="{Binding IsDmsReady, Converter={StaticResource bool2vis}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="1"
+                  DataContext="{Binding Dms}"
+                  Background="#DDFFFFFF"
+                  Width="320"
+                  Margin="4"
+                  ToolTipService.InitialShowDelay="0"
+                  ToolTipService.BetweenShowDelay="0">
+                <Grid.Resources>
+                    <Style x:Key="Header" TargetType="Label">
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                    </Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Margin" Value="4,0"/>
+                        <Setter Property="BorderBrush" Value="#FF8A8A8A"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                    </Style>
+                </Grid.Resources>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Row="0" Grid.Column="1">
+                    <Label Content="Sample (out)"
+                           Style="{StaticResource Header}"/>
+                </Border>
+                <Border Grid.Row="0" Grid.Column="2">
+                    <Label Content="Sensor (loop)"
+                           Style="{StaticResource Header}"/>
+                </Border>
+                <Border Grid.Row="0" Grid.Column="3">
+                    <Label Content="Ambient"
+                           Style="{StaticResource Header}"/>
+                </Border>
+
+                <Label Grid.Row="1" Grid.Column="0">Flow rate</Label>
+                <Label Grid.Row="2" Grid.Column="0">Humidity</Label>
+                <Label Grid.Row="3" Grid.Column="0">Temperature</Label>
+                <Label Grid.Row="4" Grid.Column="0">Pressure</Label>
+                <Label Grid.Row="5" Grid.Column="0">Pump PWM</Label>
+                
+                <Label Grid.Row="1" Grid.Column="1"
+                       Foreground="{Binding Path=Scan.SystemData.ErrorRegister.SampleFlowState, Converter={StaticResource state2brush}}"
+                       Content="{Binding Path=Scan.SystemData.Sample.Flow.Avg}" ContentStringFormat="{}{0} lpm">
+                    <Label.ToolTip>
+                        <TextBlock>
+                            <Run Text="{Binding Scan.SystemData.Sample.Flow.Min}"/>
+                            <Run> .. </Run>
+                            <Run Text="{Binding Scan.SystemData.Sample.Flow.Max}"/>
+                        </TextBlock>
+                    </Label.ToolTip>
+                </Label>
+                <Label Grid.Row="2" Grid.Column="1"
+                       Foreground="{Binding Path=Scan.SystemData.ErrorRegister.SampleHumidityState, Converter={StaticResource state2brush}}"
+                       Content="{Binding Path=Scan.SystemData.Sample.Humidity.Avg}" ContentStringFormat="{}{0}%">
+                    <Label.ToolTip>
+                        <TextBlock>
+                            <Run Text="{Binding Scan.SystemData.Sample.Humidity.Min}"/>
+                            <Run> .. </Run>
+                            <Run Text="{Binding Scan.SystemData.Sample.Humidity.Max}"/>
+                        </TextBlock>
+                    </Label.ToolTip>
+                </Label>
+                <Label Grid.Row="3" Grid.Column="1"
+                       Foreground="{Binding Path=Scan.SystemData.ErrorRegister.SampleTemperatureState, Converter={StaticResource state2brush}}"
+                       Content="{Binding Path=Scan.SystemData.Sample.Temperature.Avg}" ContentStringFormat="{}{0}°">
+                    <Label.ToolTip>
+                        <TextBlock>
+                            <Run Text="{Binding Scan.SystemData.Sample.Temperature.Min}"/>
+                            <Run> .. </Run>
+                            <Run Text="{Binding Scan.SystemData.Sample.Temperature.Max}"/>
+                        </TextBlock>
+                    </Label.ToolTip>
+                </Label>
+                <Label Grid.Row="4" Grid.Column="1"
+                       Foreground="{Binding Path=Scan.SystemData.ErrorRegister.SamplePressureState, Converter={StaticResource state2brush}}"
+                       Content="{Binding Path=Scan.SystemData.Sample.Pressure.Avg}" ContentStringFormat="{}{0} mbar">
+                    <Label.ToolTip>
+                        <TextBlock>
+                            <Run Text="{Binding Scan.SystemData.Sample.Pressure.Min}"/>
+                            <Run> .. </Run>
+                            <Run Text="{Binding Scan.SystemData.Sample.Pressure.Max}"/>
+                        </TextBlock>
+                    </Label.ToolTip>
+                </Label>
+                <Label Grid.Row="5" Grid.Column="1"
+                       Content="{Binding Path=Scan.SystemData.Sample.PumpPWM.Avg}" ContentStringFormat="{}{0}%">
+                    <Label.ToolTip>
+                        <TextBlock>
+                            <Run Text="{Binding Scan.SystemData.Sample.PumpPWM.Min}"/>
+                            <Run> .. </Run>
+                            <Run Text="{Binding Scan.SystemData.Sample.PumpPWM.Max}"/>
+                        </TextBlock>
+                    </Label.ToolTip>
+                </Label>
+
+                <Label Grid.Row="1" Grid.Column="2" 
+                       Foreground="{Binding Path=Scan.SystemData.ErrorRegister.SensorFlowState, Converter={StaticResource state2brush}}"
+                       Content="{Binding Path=Scan.SystemData.Sensor.Flow.Avg}" ContentStringFormat="{}{0} lpm">
+                    <Label.ToolTip>
+                        <TextBlock>
+                            <Run Text="{Binding Scan.SystemData.Sensor.Flow.Min}"/>
+                            <Run> .. </Run>
+                            <Run Text="{Binding Scan.SystemData.Sensor.Flow.Max}"/>
+                        </TextBlock>
+                    </Label.ToolTip>
+                </Label>
+                <Label Grid.Row="2" Grid.Column="2" 
+                       Foreground="{Binding Path=Scan.SystemData.ErrorRegister.SensorHumidityState, Converter={StaticResource state2brush}}"
+                       Content="{Binding Path=Scan.SystemData.Sensor.Humidity.Avg}" ContentStringFormat="{}{0}%">
+                    <Label.ToolTip>
+                        <TextBlock>
+                            <Run Text="{Binding Scan.SystemData.Sensor.Humidity.Min}"/>
+                            <Run> .. </Run>
+                            <Run Text="{Binding Scan.SystemData.Sensor.Humidity.Max}"/>
+                        </TextBlock>
+                    </Label.ToolTip>
+                </Label>
+                <Label Grid.Row="3" Grid.Column="2"
+                       Foreground="{Binding Path=Scan.SystemData.ErrorRegister.SensorTemperatureState, Converter={StaticResource state2brush}}"
+                       Content="{Binding Path=Scan.SystemData.Sensor.Temperature.Avg}" ContentStringFormat="{}{0}°">
+                    <Label.ToolTip>
+                        <TextBlock>
+                            <Run Text="{Binding Scan.SystemData.Sensor.Temperature.Min}"/>
+                            <Run> .. </Run>
+                            <Run Text="{Binding Scan.SystemData.Sensor.Temperature.Max}"/>
+                        </TextBlock>
+                    </Label.ToolTip>
+                </Label>
+                <Label Grid.Row="4" Grid.Column="2"
+                       Foreground="{Binding Path=Scan.SystemData.ErrorRegister.SensorPressureState, Converter={StaticResource state2brush}}"
+                       Content="{Binding Path=Scan.SystemData.Sensor.Pressure.Avg}" ContentStringFormat="{}{0} mbar">
+                    <Label.ToolTip>
+                        <TextBlock>
+                            <Run Text="{Binding Scan.SystemData.Sensor.Pressure.Min}"/>
+                            <Run> .. </Run>
+                            <Run Text="{Binding Scan.SystemData.Sensor.Pressure.Max}"/>
+                        </TextBlock>
+                    </Label.ToolTip>
+                </Label>
+                <Label Grid.Row="5" Grid.Column="2"
+                       Content="{Binding Path=Scan.SystemData.Sensor.PumpPWM.Avg}" ContentStringFormat="{}{0}%">
+                    <Label.ToolTip>
+                        <TextBlock>
+                            <Run Text="{Binding Scan.SystemData.Sensor.PumpPWM.Min}"/>
+                            <Run> .. </Run>
+                            <Run Text="{Binding Scan.SystemData.Sensor.PumpPWM.Max}"/>
+                        </TextBlock>
+                    </Label.ToolTip>
+                </Label>
+
+                <!--Label Grid.Row="1" Grid.Column="3"
+                       Foreground="{Binding Path=Scan.SystemData.ErrorRegister.FetTemperatureState, Converter={StaticResource state2brush}}"
+                       Content="{Binding Path=Scan.SystemData.FetTemperature.Avg}" ContentStringFormat="{}{0}°"/-->
+                <Label Grid.Row="2" Grid.Column="3"
+                       Foreground="{Binding Path=Scan.SystemData.ErrorRegister.AmbientHumidityState, Converter={StaticResource state2brush}}"
+                       Content="{Binding Path=Scan.SystemData.Ambient.Humidity.Avg}" ContentStringFormat="{}{0}%">
+                    <Label.ToolTip>
+                        <TextBlock>
+                            <Run Text="{Binding Scan.SystemData.Ambient.Humidity.Min}"/>
+                            <Run> .. </Run>
+                            <Run Text="{Binding Scan.SystemData.Ambient.Humidity.Max}"/>
+                        </TextBlock>
+                    </Label.ToolTip>
+                </Label>
+                <Label Grid.Row="3" Grid.Column="3"
+                       Foreground="{Binding Path=Scan.SystemData.ErrorRegister.AmbientTemperatureState, Converter={StaticResource state2brush}}"
+                       Content="{Binding Path=Scan.SystemData.Ambient.Temperature.Avg}" ContentStringFormat="{}{0}°">
+                    <Label.ToolTip>
+                        <TextBlock>
+                            <Run Text="{Binding Scan.SystemData.Ambient.Temperature.Min}"/>
+                            <Run> .. </Run>
+                            <Run Text="{Binding Scan.SystemData.Ambient.Temperature.Max}"/>
+                        </TextBlock>
+                    </Label.ToolTip>
+                </Label>
+                <Label Grid.Row="4" Grid.Column="3"
+                       Foreground="{Binding Path=Scan.SystemData.ErrorRegister.AmbientHumidityState, Converter={StaticResource state2brush}}"
+                       Content="{Binding Path=Scan.SystemData.Ambient.Pressure.Avg}" ContentStringFormat="{}{0} mbar">
+                    <Label.ToolTip>
+                        <TextBlock>
+                            <Run Text="{Binding Scan.SystemData.Ambient.Pressure.Min}"/>
+                            <Run> .. </Run>
+                            <Run Text="{Binding Scan.SystemData.Ambient.Pressure.Max}"/>
+                        </TextBlock>
+                    </Label.ToolTip>
+                </Label>
+            </Grid>
+
+            <ToggleButton x:Name="tbnScanDataProperties" Grid.Column="1"
+                          Style="{StaticResource shrink}"
                           ToolTip="Toggle visibility of scan data properties"
                           IsChecked="{Binding IsScanDataPropertiesPanelMinimized}"/>
-
-            <Grid DataContext="{Binding Dms}"
-                  Width="160"
-                  Margin="4">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Row="0" Grid.ColumnSpan="2"
-                        BorderBrush="#FF8A8A8A"
-                        BorderThickness="0,0,0,1">
-                    <Label Content="Sample"
-                           HorizontalContentAlignment="Center"
-                           FontWeight="Bold"/>
-                </Border>
-                <Label Grid.Row="1" Grid.Column="0">Flow rate</Label>
-                <Label Grid.Row="1" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sample.Flow.Avg}" ContentStringFormat="{}{0} sccm"/>
-                <Label Grid.Row="2" Grid.Column="0">Humidity</Label>
-                <Label Grid.Row="2" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sample.Humidity.Avg}" ContentStringFormat="{}{0}%"/>
-                <Label Grid.Row="3" Grid.Column="0">Temperature</Label>
-                <Label Grid.Row="3" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sample.Temperature.Avg}" ContentStringFormat="{}{0}°"/>
-                <Label Grid.Row="4" Grid.Column="0">Pressure</Label>
-                <Label Grid.Row="4" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sample.Pressure.Avg}" ContentStringFormat="{}{0} mbar"/>
-                <Label Grid.Row="5" Grid.Column="0">Pump</Label>
-                <Label Grid.Row="5" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sample.PumpPWM.Avg}" ContentStringFormat="{}{0}"/>
-            </Grid>
-
-            <Separator Margin="8,0"/>
-
-            <Grid DataContext="{Binding Dms}"
-                  Width="160"
-                  Margin="4">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Row="0" Grid.ColumnSpan="2"
-                        BorderBrush="#FF8A8A8A"
-                        BorderThickness="0,0,0,1">
-                    <Label Content="Sensor"
-                           HorizontalContentAlignment="Center"
-                           FontWeight="Bold"/>
-                </Border>
-                <Label Grid.Row="1" Grid.Column="0">Flow rate</Label>
-                <Label Grid.Row="1" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sensor.Flow.Avg}" ContentStringFormat="{}{0} sccm"/>
-                <Label Grid.Row="2" Grid.Column="0">Humidity</Label>
-                <Label Grid.Row="2" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sensor.Humidity.Avg}" ContentStringFormat="{}{0}%"/>
-                <Label Grid.Row="3" Grid.Column="0">Temperature</Label>
-                <Label Grid.Row="3" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sensor.Temperature.Avg}" ContentStringFormat="{}{0}°"/>
-                <Label Grid.Row="4" Grid.Column="0">Pressure</Label>
-                <Label Grid.Row="4" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sensor.Pressure.Avg}" ContentStringFormat="{}{0} mbar"/>
-                <Label Grid.Row="5" Grid.Column="0">Pump</Label>
-                <Label Grid.Row="5" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Sensor.PumpPWM.Avg}" ContentStringFormat="{}{0}"/>
-            </Grid>
-
-            <Separator Margin="8,0"/>
-
-            <Grid DataContext="{Binding Dms}"
-                  Width="160"
-                  Margin="4">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                    <RowDefinition />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Row="0" Grid.ColumnSpan="2"
-                        BorderBrush="#FF8A8A8A"
-                        BorderThickness="0,0,0,1">
-                    <Label Content="Ambient"
-                           HorizontalContentAlignment="Center"
-                           FontWeight="Bold"/>
-                </Border>
-                <Label Grid.Row="2" Grid.Column="0">Humidity</Label>
-                <Label Grid.Row="2" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Ambient.Humidity.Avg}" ContentStringFormat="{}{0}%"/>
-                <Label Grid.Row="3" Grid.Column="0">Temperature</Label>
-                <Label Grid.Row="3" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Ambient.Temperature.Avg}" ContentStringFormat="{}{0}°"/>
-                <Label Grid.Row="4" Grid.Column="0">Flow rate</Label>
-                <Label Grid.Row="4" Grid.Column="1" Content="{Binding Path=Scan.SystemData.Ambient.Pressure.Avg}" ContentStringFormat="{}{0} mbar"/>
-            </Grid>
-        </StackPanel>
+        </Grid>
     </Grid>
 </UserControl>

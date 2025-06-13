@@ -125,12 +125,12 @@ public partial class DmsPlot : UserControl, INotifyPropertyChanged
                 if (value)
                 {
                     stpScanDataProperties.Width = 32;
-                    stpScanDataProperties.Background = Brushes.Transparent;
+                    Grid.SetColumn(tbnScanDataProperties, 0);
                 }
                 else
                 {
                     stpScanDataProperties.ClearValue(WidthProperty);
-                    stpScanDataProperties.Background = new SolidColorBrush(Color.FromArgb(64, 255, 255, 255));
+                    Grid.SetColumn(tbnScanDataProperties, 1);
                 }
 
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsScanDataPropertiesPanelMinimized)));

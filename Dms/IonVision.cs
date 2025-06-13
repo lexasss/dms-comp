@@ -31,7 +31,27 @@ public record class ErrorRegister(
     bool SampleHeaterTemperatureR1Over,
     bool SensorHeaterTemperatureR1Under,
     bool SensorHeaterTemperatureR1Over
-); 
+)
+{
+    public Data.ValueState SampleFlowState => GetValueState(SampleFlowR1Under, SampleFlowR1Over);
+    public Data.ValueState SampleHumidityState => GetValueState(SampleHumidityR1Under, SampleHumidityR1Over);
+    public Data.ValueState SampleTemperatureState => GetValueState(SampleTemperatureR1Under, SampleTemperatureR1Over);
+    public Data.ValueState SamplePressureState => GetValueState(SamplePressureR1Under, SamplePressureR1Over);
+    public Data.ValueState SensorFlowState => GetValueState(SensorFlowR1Under, SensorFlowR1Over);
+    public Data.ValueState SensorHumidityState => GetValueState(SensorHumidityR1Under, SensorHumidityR1Over);
+    public Data.ValueState SensorTemperatureState => GetValueState(SensorTemperatureR1Under, SensorTemperatureR1Over);
+    public Data.ValueState SensorPressureState => GetValueState(SensorPressureR1Under, SensorPressureR1Over );
+    public Data.ValueState FetTemperatureState => GetValueState(FetTemperatureR1Under, FetTemperatureR1Over);
+    public Data.ValueState AmbientHumidityState => GetValueState(AmbientHumidityR1Under, AmbientHumidityR1Over);
+    public Data.ValueState AmbientTemperatureState => GetValueState(AmbientTemperatureR1Under, AmbientTemperatureR1Over);
+    public Data.ValueState AmbientPressureState => GetValueState(AmbientPressureR1Under, AmbientPressureR1Over);
+
+    private static Data.ValueState GetValueState(bool isBelow, bool isAbove) =>
+        isBelow ? Data.ValueState.BelowRange :
+        isAbove ? Data.ValueState.AboveRange :
+        Data.ValueState.InsideRange;
+}
+
 public record class RangeAvg(
     double Avg,
     double Min,
