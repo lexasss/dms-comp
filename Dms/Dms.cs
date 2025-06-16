@@ -19,10 +19,13 @@ public class Dms
     public string Time { get; init; }
     public IonVision.Scan Scan { get; }
 
-    /// Internal members used by <see cref="DataService"/>
+    public int Width { get; init; }
+    public int Height { get; init; }
 
-    internal int Width { get; init; }
-    internal int Height { get; init; }
+    public float MinUs => Scan.MeasurementData.Usv[0];
+    public float MaxUs => Scan.MeasurementData.Usv.Last();
+    public float MinUc => Scan.MeasurementData.Ucv[0];
+    public float MaxUc => Scan.MeasurementData.Ucv.Last();
 
     /// <summary>
     /// Constructor

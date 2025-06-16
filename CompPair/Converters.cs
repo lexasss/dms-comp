@@ -34,3 +34,15 @@ public class ValueStateToBrushConverter : IValueConverter
         throw new NotImplementedException("ConvertBack is not implemented for ValueStateToColorConverter.");
     }
 }
+
+[ValueConversion(typeof(bool), typeof(Brush))]
+public class ValidityToBrushConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+        (bool)value ? new SolidColorBrush(Color.FromArgb(0xDD, 255, 255, 255)) : new SolidColorBrush(Color.FromArgb(0xDD, 255, 214, 214));
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        throw new NotImplementedException("ConvertBack is not implemented for ValidityToBrushConverter.");
+    }
+}
